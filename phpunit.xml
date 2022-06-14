@@ -16,7 +16,7 @@
          resolveDependencies="true"
 >
     <testsuites>
-        <testsuite name="Acl tests">
+        <testsuite name="Storage tests">
             <directory>./tests</directory>
         </testsuite>
     </testsuites>
@@ -27,6 +27,13 @@
         </include>
     </coverage>
 
+    <php>
+        <env name="TEST_TOBENTO_STORAGE_PDO_MYSQL" value="false" />
+        <env name="TEST_TOBENTO_STORAGE_PDO_MYSQL_DSN" value="mysql:host=localhost;dbname=tobento_storage_test" />
+        <env name="TEST_TOBENTO_STORAGE_PDO_MYSQL_USERNAME" value="root" />
+        <env name="TEST_TOBENTO_STORAGE_PDO_MYSQL_PASSWORD" value="" />
+    </php>
+    
     <logging>
         <junit outputFile="build/report.junit.xml"/>
         <testdoxHtml outputFile="build/coverage"/>

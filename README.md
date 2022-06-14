@@ -1,6 +1,6 @@
-# ACL Service
+# Storage Service
 
-The ACL Service is a simple role and user-level access control system.
+The Storage Service comes with a query builder for storing and fetching items.
 
 ## Table of Contents
 
@@ -9,21 +9,39 @@ The ACL Service is a simple role and user-level access control system.
 	- [Highlights](#highlights)
 	- [Simple Example](#simple-example)
 - [Documentation](#documentation)
-	- [Rules](#rules)
-        - [Default Rule](#default-rule)
-        - [Default Rule Custom](#default-rule-custom)
-        - [Custom Rules](#custom-rules)
-	- [Permissions](#permissions)
-	- [Roles](#roles)   
+    - [Storages](#storages)
+        - [Pdo MySql Storage](#pdo-mysql-storage)
+        - [Json File Storage](#json-file-storage)
+        - [In Memory Storage](#in-memory-storage)
+    - [Queries](#queries)
+        - [Select Statements](#select-statements)
+            - [Retrieving Methods](#retrieving-methods)
+            - [Where Clauses](#where-clauses)
+            - [JSON Where Clauses](#json-where-clauses)
+            - [Join Clauses](#join-clauses)
+            - [Group Clauses](#group-clauses)
+            - [Select Columns](#select-columns)
+            - [Index Column](#index-column)
+            - [Ordering](#order)
+            - [Limit](#limit)
+        - [Insert Statements](#insert-statements)
+        - [Update Statements](#update-statements)
+        - [Delete Statements](#delete-statements)
+        - [Transactions](#transactions)
+        - [Debugging](#debugging)
+    - [Item Interface](#item-interface)
+    - [Items Interface](#items-interface)
+    - [Result Interface](#result-interface)
+    - [Tables](#tables)
 - [Credits](#credits)
 ___
 
 # Getting started
 
-Add the latest version of the Acl service running this command.
+Add the latest version of the Storage service running this command.
 
 ```
-composer require tobento/service-acl
+composer require tobento/service-storage
 ```
 
 ## Requirements
@@ -33,595 +51,816 @@ composer require tobento/service-acl
 ## Highlights
 
 - Framework-agnostic, will work with any project
-- Customize permission behaviour
 - Decoupled design
+- Query Builder
+- PDO MySql Storage
+- Json File Storage
+- In Memory Storage
 
 ## Simple Example
 
-Here is a simple example of how to use the Acl service.
+Here is a simple example of how to use the Storage service.
 
 ```php
-use Tobento\Service\Acl\Acl;
-use Tobento\Service\Acl\Authorizable;
-use Tobento\Service\Acl\AuthorizableAware;
-use Tobento\Service\Acl\Role;
+use Tobento\Service\Storage\Tables\Tables;
+use Tobento\Service\Storage\JsonFileStorage;
+use Tobento\Service\Storage\ItemInterface;
 
-// User class example.
-class User implements Authorizable
-{
-    use AuthorizableAware;
-    
-    public function __construct(
-        protected string $name,
-    ) {}
-}
+$tables = new Tables();
+$tables->add('products', ['id', 'sku', 'price'], 'id');
 
-// Create Acl.
-$acl = new Acl();
+$storage = new JsonFileStorage(
+    dir: 'home/private/storage/',
+    tables: $tables
+);
 
-// Adding rules.
-$acl->rule('articles.read')
-    ->title('Article Read')
-    ->description('If a user can read articles');
-    
-$acl->rule('articles.create');
-$acl->rule('articles.update');
+$inserted = $storage
+    ->table('products')
+    ->insert([
+        'id' => 1,
+        'sku' => 'pencil',
+        'price' => 1.29,
+    ]);
 
-// Create role.
-$guestRole = new Role('guest');
+$item = $storage->table('products')->find(1);
 
-// Adding permissions on role.
-$guestRole->addPermissions(['articles.read']);
-
-// Create and set user role.
-$user = (new User('Nick'))->setRole($guestRole);
-
-// Adding permissions on user.
-// If permissions are set on user, role permissions will not count anymore.
-$user->addPermissions(['articles.read']);
-
-// Set current user.
-$acl->setCurrentUser($user);
-
-// Adding additional permissions for the current user only.
-$acl->addPermissions(['articles.create']);
-
-// Check permissions for current user.
-if ($acl->can('articles.read')) {
-    // user has permission to read articles.
-}
-
-// check permission for specific user.
-if ($acl->cant(key: 'articles.read', user: $user)) {
-    // user has not permission to read articles.
-}
+var_dump($item instanceof ItemInterface);
+// bool(true)
 ```
 
 # Documentation
 
-## Rules
+## Storages
 
-Adding and getting rules.
+### Pdo MySql Storage
 
 ```php
-use Tobento\Service\Acl\Acl;
-use Tobento\Service\Acl\RuleInterface;
+use Tobento\Service\Database\PdoDatabaseFactory;
+use Tobento\Service\Storage\Tables\Tables;
+use Tobento\Service\Storage\PdoMySqlStorage;
+use Tobento\Service\Storage\StorageInterface;
+use PDO;
 
-// Create Acl.
-$acl = new Acl();
+$pdo = (new PdoDatabaseFactory())->createPdo(
+    name: 'mysql',
+    config: [
+        'dsn' => 'mysql:host=localhost;dbname=db_name',
+        'username' => 'root',
+        'password' => '',
+        'options' => [
+            PDO::ATTR_ERRMODE => PDO::ERRMODE_EXCEPTION,
+            PDO::ATTR_EMULATE_PREPARES => false,
+        ],
+    ],
+);
 
-// Add default rule.
-$acl->rule('articles.read');
+$tables = new Tables();
+$tables->add('products', ['id', 'sku', 'price'], 'id');
+$tables->add('users', ['id', 'firstname', 'lastname', 'email'], 'id');
 
-// Add custom rule.
-$acl->addRule(RuleInterface $rule);
+$storage = new PdoMySqlStorage($pdo, $tables);
 
-// Get rules.
-foreach($acl->getRules() as $rule)
-{
-    $key = $rule->getKey();
-    $inputKey = $rule->getInputKey();
-    $title = $rule->getTitle();
-    $description = $rule->getDescription();
-    $area = $rule->getArea();
-}
-
-// get specific rules
-$rule = $acl->getRule('articles.read');
+var_dump($storage instanceof StorageInterface);
+// bool(true)
 ```
 
-### Default Rule
-
-The default rule has the following permission behaviour:
+### Json File Storage
 
 ```php
-use Tobento\Service\Acl\Acl;
+use Tobento\Service\Storage\Tables\Tables;
+use Tobento\Service\Storage\JsonFileStorage;
+use Tobento\Service\Storage\StorageInterface;
 
-// Create Acl.
-$acl = new Acl();
+$tables = new Tables();
+$tables->add('products', ['id', 'sku', 'price'], 'id');
+$tables->add('users', ['id', 'firstname', 'lastname', 'email'], 'id');
 
-$acl->rule('articles.read');
-$acl->rule('articles.update');
+$storage = new JsonFileStorage(
+    dir: 'home/private/storage/',
+    tables: $tables
+);
 
-// Create role.
-$role = new Role('guest');
-
-// Create and set user role.
-$user = (new User('Nick'))->setRole($role);
-
-// Adding permissions on acl, only for current user.
-$acl->addPermissions(['articles.read']);
-
-// Adding permissions on role.
-$role->addPermissions(['articles.read']);
-
-// Adding permissions on user.
-// If permissions are set on user, role permissions will not count anymore.
-// Only acl and user specific permissions.
-$user->addPermissions(['articles.read']);
+var_dump($storage instanceof StorageInterface);
+// bool(true)
 ```
 
-Areas bahviour:
+### In Memory Storage
 
 ```php
-use Tobento\Service\Acl\Acl;
+use Tobento\Service\Storage\Tables\Tables;
+use Tobento\Service\Storage\InMemoryStorage;
+use Tobento\Service\Storage\StorageInterface;
 
-// Create Acl.
-$acl = new Acl();
+$tables = new Tables();
+$tables->add('products', ['id', 'sku', 'price'], 'id');
+$tables->add('products_lg', ['product_id', 'language_id', 'title']);
+$tables->add('users', ['id', 'firstname', 'lastname', 'email'], 'id');
 
-$acl->rule('articles.read', 'frontend');
-$acl->rule('articles.update', 'backend');
+$storage = new InMemoryStorage([
+    'products' => [
+        1 => ['id' => 1, 'sku' => 'paper', 'price' => 1.2],
+        2 => ['id' => 2, 'sku' => 'pen', 'price' => 1.56],
+    ],
+    'products_lg' => [
+        ['product_id' => 1, 'language_id' => 1, 'title' => 'Papier'],
+        ['product_id' => 1, 'language_id' => 2, 'title' => 'Paper'],
+        ['product_id' => 2, 'language_id' => 1, 'title' => 'Stift'],
+    ],    
+    'users' => [
+        1 => ['id' => 1, 'firstname' => 'Erika', 'lastname' => 'Mustermann', 'email' => 'erika.mustermann@example.com'],
+        2 => ['id' => 2, 'firstname' => 'Mustermann', 'lastname' => 'Mustermann', 'email' => 'mustermann@example.com'],
+    ],    
+], $tables);
 
-// Guest Role taking only frontend rules into account,
-// ignoring any permission from backend rules even if permission is given.
-$role = new Role('guest', ['frontend']);
-
-// Editor can have frontend and backend rules.
-$role = new Role('editor', ['frontend', 'backend']);
+var_dump($storage instanceof StorageInterface);
+// bool(true)
 ```
 
-### Default Rule Custom
+## Queries
 
-You can easily add a custom handler for extending a specific rule behaviour.
+### Select Statements
+
+#### Retrieving methods
+
+**get**
+
+Retrieve items.
 
 ```php
-use Tobento\Service\Acl\Acl;
-use Tobento\Service\Acl\Authorizable;
-use Tobento\Service\Acl\AuthorizableAware;
-use Tobento\Service\Acl\Role;
+use Tobento\Service\Storage\ItemsInterface;
 
-// User class example.
-class User implements Authorizable
-{
-    use AuthorizableAware;
+$products = $storage->table('products')->get();
+
+var_dump($products instanceof ItemsInterface);
+// bool(true)
+
+$products->all();
+/*Array
+(
+    [1] => Array
+        (
+            [id] => 1
+            [sku] => paper
+            [price] => 1.2
+        )
+
+    [2] => Array
+        (
+            [id] => 2
+            [sku] => pen
+            [price] => 1.56
+        )
+
+)*/
+```
+
+Check out [Items Interface](#items-interface) to learn more about it.
+
+**column**
+
+```php
+use Tobento\Service\Storage\ItemInterface;
+
+$column = $storage->table('products')->column('price');
+
+var_dump($column instanceof ItemInterface);
+// bool(true)
+
+$column->all();
+/*Array
+(
+    [0] => 1.2
+    [1] => 1.56
+)*/
+```
+
+Index by a certain column:
+
+```php
+$storage->table('products')->column('price', 'sku')->all();
+/*Array
+(
+    [paper] => 1.2
+    [pen] => 1.56
+)*/
+```
+
+Check out [Item Interface](#item-interface) to learn more about it.
+
+**first**
+
+Returns the first found item or NULL.
+
+```php
+use Tobento\Service\Storage\ItemInterface;
+
+$product = $storage->table('products')->first();
+
+var_dump($product instanceof ItemInterface);
+// bool(true)
+
+$product->all();
+/*Array
+(
+    [id] => 1
+    [sku] => paper
+    [price] => 1.2
+)*/
+```
+
+Check out [Item Interface](#item-interface) to learn more about it.
+
+**find**
+
+Returns a single item by id or NULL.
+
+```php
+use Tobento\Service\Storage\ItemInterface;
+
+$product = $storage->table('products')->find(2);
+
+var_dump($product instanceof ItemInterface);
+// bool(true)
+
+$product->all();
+/*Array
+(
+    [id] => 2
+    [sku] => pen
+    [price] => 1.56
+)*/
+```
+
+Check out [Item Interface](#item-interface) to learn more about it.
+
+**value**
+
+Get a single column's value from the first item found.
+
+```php
+$value = $storage->table('products')->value('sku');
+
+var_dump($value);
+// string(5) "paper"
+```
+
+**count**
+
+Get the items count.
+
+```php
+$count = $storage->table('products')->count();
+
+var_dump($count);
+// int(2)
+```
+
+#### Where Clauses
+
+**where / orWhere**
+
+```php
+$products = $storage->table('products')
+    ->where('price', '>', 1.3)
+    ->get();
     
-    public function __construct(
-        protected string $name,
-    ) {}
-}
-
-// Article class example
-class Article
-{    
-    public function __construct(
-        protected string $name,
-        protected array $roles = [],
-        protected null|Authorizable $user = null
-    ) {}
-
-    public function getName(): string
-    {
-        return $this->name;
-    }
+$products = $storage->table('products')
+    ->where('price', '>', 1.2)
+    ->orWhere(function($query) {
+        $query->where('price', '>', 1.2)
+              ->where('sku', '=', 'pen');
+    })
+    ->get();
     
-    public function getUser(): null|Authorizable
-    {
-        return $this->user;
-    }
+$products = $storage->table('products')
+    ->where(function($query) {
+        $query->where('price', '>', 1.2)
+              ->orWhere('sku', '=', 'pen');
+    })
+    ->get();
 
-    public function getRoles(): array
-    {
-        return $this->roles;
-    }    
-}
+// Finds any values that start with "a"
+$products = $storage->table('products')
+    ->where('sku', 'like', 'a%')
+    ->get();
+    
+// Finds any values that end with "a"
+$products = $storage->table('products')
+    ->where('sku', 'like', '%a')
+    ->get();
+    
+// Finds any values that have "a" in any position
+$products = $storage->table('products')
+    ->where('sku', 'like', '%a%')
+    ->get();    
+```
 
-// Create Acl.
-$acl = new Acl();
+Supported operators: =, !=, >, <, >=, <=, <>, <=>, like, not like
 
-// Rule to check if user is allowed to access a specific resource.
-$acl->rule('resource')
-    ->needsPermission(false)
-    ->handler(function(Authorizable $user, null|Authorizable $resourceUser): bool {
+**whereIn / whereNotIn / orWhereIn / orWhereNotIn**
 
-        if (is_null($resourceUser)) {
-            return false;
-        }
+```php
+$products = $storage->table('products')
+    ->whereIn('id', [2, 3])
+    ->get();
+    
+$products = $storage->table('products')
+    ->whereNotIn('id', [2, 3])
+    ->get();
+```
 
-        return $user === $resourceUser;
+**whereNull / whereNotNull / orWhereNull / orWhereNotNull**
+
+```php
+$products = $storage->table('products')
+    ->whereNull('price')
+    ->get();
+    
+$products = $storage->table('products')
+    ->whereNotNull('price')
+    ->get();    
+```
+
+**whereBetween / whereNotBetween / orWhereBetween / orWhereNotBetween**
+
+```php
+$products = $storage->table('products')
+    ->whereBetween('price', [1.2, 15])
+    ->get();
+    
+$products = $storage->table('products')
+    ->whereNotBetween('price', [1.2, 15])
+    ->get();
+```
+
+**whereColumn**
+
+```php
+$users = $storage->table('users')
+    ->whereColumn('firstname', '=', 'lastname')
+    ->get();
+```
+
+Supported operators: =, !=, >, <, >=, <=, <>, <=>
+
+#### JSON Where Clauses
+
+**whereJsonContains**
+
+```php
+$products = $storage->table('products')
+    ->whereJsonContains('options->color', 'blue')
+    ->get();
+    
+$products = $storage->table('products')
+    ->whereJsonContains('options->color', ['blue', 'red'])
+    ->get();
+```
+
+**whereJsonLength**
+
+```php
+$products = $storage->table('products')
+    ->whereJsonLength('options->color', '>', 2)
+    ->get();
+```
+
+Supported operators: =, !=, >, <, >=, <=, <>, <=>
+
+#### Join Clauses
+
+**join**
+
+```php
+$products = $storage->table('products')
+    ->join('products_lg', 'id', '=', 'product_id')
+    ->get();
+```
+
+**leftJoin / rightJoin**
+
+```php
+$products = $storage->table('products')
+    ->leftJoin('products_lg', 'id', '=', 'product_id')
+    ->get();
+    
+$products = $storage->table('products')
+    ->rightJoin('products_lg', 'id', '=', 'product_id')
+    ->get();
+```
+
+**Advanced join clauses**
+
+```php
+$products = $storage->table('products')
+    ->join('products_lg', function($join) {
+        $join->on('id', '=', 'product_id')
+             ->orOn('id', '=', 'language_id');         
+    })
+    ->get();
+    
+$products = $storage->table('products')
+    ->join('products_lg', function($join) {
+        $join->on('id', '=', 'product_id')
+             ->where('product_id', '>', 2);
+    })
+    ->get();
+```
+
+#### Group Clauses
+
+```php
+$products = $storage->table('products')
+    ->groupBy('price')
+    ->having('price', '>', 2)
+    ->get();
+    
+$products = $storage->table('products')
+    ->groupBy('price')
+    ->havingBetween('price', [1, 4])
+    ->get();
+```
+
+#### Select Columns
+
+You may select just specific columns.
+
+```php
+$products = $storage->table('products')
+    ->select('id', 'sku')
+    ->get();
+    
+$product = $storage->table('products')
+    ->select('id', 'sku')
+    ->first();
+```
+
+#### Index Column
+
+Specify the column you want the items to be indexed.
+
+```php
+$products = $storage->table('products')
+    ->index('sku')
+    ->get();
+```
+
+#### Ordering
+
+```php
+$products = $storage->table('products')
+    ->order('sku', 'ASC')
+    ->get();
+    
+$products = $storage->table('products')
+    ->order('sku', 'DESC')
+    ->get();    
+```
+
+#### Limit
+
+```php
+$products = $storage->table('products')
+    ->limit(number: 2, offset: 10)
+    ->get();
+```
+
+### Insert Statements
+
+```php
+use Tobento\Service\Storage\ResultInterface;
+use Tobento\Service\Storage\ItemInterface;
+
+$inserted = $storage
+    ->table('products')
+    ->insert([
+        'sku' => 'glue',
+        'price' => 4.55,
+    ]);
+    
+var_dump($inserted instanceof ResultInterface);
+// bool(true)
+
+var_dump($inserted->item() instanceof ItemInterface);
+// bool(true)
+```
+
+Check out [Result Interface](#result-interface) to learn more about it.
+
+Check out [Item Interface](#item-interface) to learn more about it.
+
+### Update Statements
+
+You may constrain the update query using where clauses.
+
+```php
+use Tobento\Service\Storage\ResultInterface;
+use Tobento\Service\Storage\ItemsInterface;
+
+$updated = $storage
+    ->table('products')
+    ->where('id', '=', 2)
+    ->update([
+        'price' => 4.55,
+    ]);
+
+var_dump($updated instanceof ResultInterface);
+// bool(true)
+
+var_dump($updated->items() instanceof ItemsInterface);
+// bool(true)
+
+var_dump($updated->itemsCount());
+// int(1)
+```
+
+Check out [Result Interface](#result-interface) to learn more about it.
+
+Check out [Items Interface](#items-interface) to learn more about it.
+
+**updateOrInsert**
+
+```php
+use Tobento\Service\Storage\ResultInterface;
+use Tobento\Service\Storage\ItemInterface;
+
+$result = $storage->table('products')->updateOrInsert(
+    ['id' => 3], // where clauses
+    ['sku' => 'glue', 'price' => 3.48]
+);
+
+var_dump($result instanceof ResultInterface);
+// bool(true)
+
+var_dump($result->item() instanceof ItemInterface);
+// bool(true)
+
+var_dump($result->action());
+// string(6) "insert"
+```
+
+Check out [Result Interface](#result-interface) to learn more about it.
+
+Check out [Item Interface](#item-interface) to learn more about it.
+
+#### Updating JSON Columns
+
+```php
+$updated = $storage
+    ->table('products')
+    ->where('id', 2)
+    ->update([
+        'options->color' => ['red'],
+        'options->active' => true,
+    ]);
+```
+
+### Delete Statements
+
+```php
+use Tobento\Service\Storage\ResultInterface;
+use Tobento\Service\Storage\ItemsInterface;
+
+$deleted = $storage->table('products')
+    ->where('price', 1.33, '>')
+    ->delete();
+
+var_dump($deleted instanceof ResultInterface);
+// bool(true)
+
+var_dump($deleted->items() instanceof ItemsInterface);
+// bool(true)
+
+var_dump($deleted->itemsCount());
+// int(1)
+```
+
+Check out [Result Interface](#result-interface) to learn more about it.
+
+Check out [Items Interface](#items-interface) to learn more about it.
+
+### Transactions
+
+**commit**
+
+```php
+$storage->begin();
+
+// your queries
+
+$storage->commit();
+```
+
+**rollback**
+
+```php
+$storage->begin();
+
+// your queries
+
+$storage->rollback();
+```
+
+**transaction**
+
+You may use the transaction method to run a set of storage operations within a transaction. If an exception is thrown within the transaction closure, the transaction will automatically be rolled back. If the closure executes successfully, the transaction will automatically be committed.
+
+```php
+use Tobento\Service\Storage\StorageInterface;
+
+$storage->transaction(function(StorageInterface $storage) {
+    // your queries  
+});
+```
+
+### Debugging
+
+```php
+[$statement, $bindings] = $storage->table('products')
+    ->where('id', '=', 1)
+    ->getQuery();
+
+var_dump($statement);
+// string(56) "SELECT `id`,`sku`,`price` FROM `products` WHERE `id` = ?"
+
+var_dump($bindings);
+// array(1) { [0]=> int(1) }
+```
+
+**Using a Closure**
+
+You must use a Closure if you want to debug other retrieving methods than "get" or insert, update and delete statements.
+
+```php
+[$statement, $bindings] = $storage->table('products')
+    ->where('id', '=', 1)
+    ->getQuery(function(StorageInterface $storage) {
+        $storage->update([
+            'price' => 4.55,
+        ]);
     });
 
-// Rule to check if user has role for a specific resource.
-$acl->rule('has_role')
-    ->needsPermission(false)
-    ->handler(function(Authorizable $user, array $roles = []) {
+var_dump($statement);
+// string(48) "UPDATE `products` SET `price` = ? WHERE `id` = ?"
 
-        if (empty($roles)) {
-            return true;
-        }
-
-        return in_array($user->role()->key(), $roles);                    
-    });
-            
-$user = (new User('Nick'))->setRole(new Role('editor'));
-
-$acl->setCurrentUser($user);    
-
-$article = new Article('About us', ['editor'], $user);
-
-// Check resource access.
-if ($acl->can('resource', [$article->getUser()])) {
-    // user can access about page.
-}
-
-// Check resource role access.
-if ($acl->can('has_role', [$article->getRoles()])) {
-    // user has the right role to access this resource.
-}
+var_dump($bindings);
+// array(2) { [0]=> float(4.55) [1]=> int(1) }
 ```
 
-### Custom Rules
+## Item Interface
 
-You can easily add a custom rule for a different permission strategy.
+**get**
 
-Your Rule must implement the following RuleInterface.
+Get an item value by key.
 
 ```php
-/**
- * RuleInterface
- */
-interface RuleInterface
-{
-    /**
-     * Get the key.
-     *
-     * @return string The key such as 'user.create'.
-     */    
-    public function getKey(): string;
+use Tobento\Service\Storage\ItemInterface;
+use Tobento\Service\Storage\Item;
 
-    /**
-     * Get the input key. May be used for form input.
-     *
-     * @return string The key such as 'user_create'.
-     */    
-    public function getInputKey(): string;    
-    
-    /**
-     * Get the title.
-     *
-     * @return string The title
-     */    
-    public function getTitle(): string;
-    
-    /**
-     * Get the description.
-     *
-     * @return string The description
-     */    
-    public function getDescription(): string;
-    
-    /**
-     * Get the area.
-     *
-     * @return string
-     */    
-    public function getArea(): string;
+$item = new Item(['title' => 'Title']);
 
-    /**
-     * If the rule requires permissions to match the rule.
-     *
-     * @return bool
-     */    
-    public function requiresPermission(): bool;    
+var_dump($item instanceof ItemInterface);
+// bool(true)
 
-    /**
-     * Return if the rule matches the criteria.
-     *
-     * @param AclInterface
-     * @param string A permission key 'user.create'.
-     * @param array Any parameters for custom handler
-     * @param null|Authorizable
-     * @return bool True if rule matches, otherwise false
-     */    
-    public function matches(
-        AclInterface $acl,
-        string $key,
-        array $parameters = [],
-        ?Authorizable $user = null
-    ): bool;    
-}
+var_dump($item->get('title'));
+// string(5) "Title"
+
+// returns the default value if the key does not exist.
+var_dump($item->get('sku', 'Sku'));
+// string(3) "Sku"
 ```
 
-Lets make a custum rule for just letting user specific permissions have access ignoring acl and role permissions.
+**all**
+
+Returns all items (attributes).
 
 ```php
-use Tobento\Service\Acl\Acl;
-use Tobento\Service\Acl\AclInterface;
-use Tobento\Service\Acl\RuleInterface;
-use Tobento\Service\Acl\Authorizable;
-use Tobento\Service\Acl\AuthorizableAware;
-use Tobento\Service\Acl\Role;
+use Tobento\Service\Storage\Item;
 
-// Custom rule
-class CustomRule implements RuleInterface
-{    
-    public function __construct(
-        protected string $key,
-        protected string $area,
-    ) {}
- 
-    public function getKey(): string
-    {
-        return $this->key;
-    }
+$item = new Item(['title' => 'Title']);
 
-    public function getInputKey(): string
-    {
-        return $this->key;
-    }
-       
-    public function getTitle(): string
-    {        
-        return $this->key;
-    }
-   
-    public function getDescription(): string
-    {
-        return '';
-    }
- 
-    public function getArea(): string
-    {
-        return $this->area;
-    }
-   
-    public function requiresPermission(): bool
-    {
-        return true;
-    }
- 
-    public function matches(
-        AclInterface $acl,
-        string $key,
-        array $parameters = [],
-        ?Authorizable $user = null
-    ): bool {
-            
-        $user = $user ?: $acl->getCurrentUser();
-
-        // not user at all
-        if (is_null($user)) {
-            return false;
-        }
-        
-        // user needs a role.
-        if (! $user->hasRole()) {
-            return false;
-        }
-
-        // collect only user permissions.
-        if (!$user->hasPermissions()) {
-            return false;
-        }
-        
-        $permissions = $user->getPermissions();
-
-        // permission check
-        if (!in_array($key, $permissions)) {
-            return false;
-        }
-        
-        // area check
-        if (!in_array($this->getArea(), $user->role()->areas())) {
-            return false;
-        }
-        
-        return true;
-    }
-}
-
-// User class example.
-class User implements Authorizable
-{
-    use AuthorizableAware;
-    
-    public function __construct(
-        protected string $name,
-    ) {}
-}
-
-// Create Acl.
-$acl = new Acl();
-
-// Adding default rules.
-$acl->addRule(new CustomRule('articles.read', 'frontend'));
-$acl->addRule(new CustomRule('articles.create', 'frontend'));
-
-// Create role.
-$role = new Role('guest');
-
-// Adding permissions on role does has no effect.
-$role->addPermissions(['articles.read']);
-
-// Create and set user role.
-$user = (new User('Nick'))->setRole($role);
-$user->addPermissions(['articles.create']);
-
-// Set current user.
-$acl->setCurrentUser($user);
-
-if ($acl->can('articles.create')) {
-    // user has permission to read articles.
-}
+var_dump($item->all());
+// array(1) { ["title"]=> string(5) "Title" }
 ```
 
-## Permissions
+**collection**
 
-The following methods are available on objects implementing the Permissionable Interface or the Authorizable Interface.
-
-- Tobento\Service\Acl\Acl::class
-- Tobento\Service\Acl\Role::class
+Returns a new Collection with the attributes.
 
 ```php
-use Tobento\Service\Acl\Acl;
-use Tobento\Service\Acl\Permissionable;
-use Tobento\Service\Acl\Authorizable;
+use Tobento\Service\Storage\Item;
+use Tobento\Service\Collection\Collection;
 
-// Create Acl.
-$acl = new Acl();
+$item = new Item(['title' => 'Title']);
 
-// Set all permissions.
-$acl->setPermissions(['user.create', 'user.update']);
-
-// Adding more permissions.
-$acl->addPermissions(['user.delete']);
-
-$permissions = $acl->getPermissions(); // ['user.create', 'user.update', 'user.delete']
-
-// Has any permissions at all.
-$hasPermissions = $acl->hasPermissions();
-
-// Has specific permission.
-$hasPermission = $acl->hasPermission('user.update');
+var_dump($item->collection() instanceof Collection);
+// bool(true)
 ```
 
-Available methods for checking permissions on acl:
+Check out the [Collection](https://github.com/tobento-ch/service-collection#collection) to learn more about it.
+
+## Items Interface
+
+**get**
+
+Get an item value by key.
 
 ```php
-use Tobento\Service\Acl\Acl;
+use Tobento\Service\Storage\ItemsInterface;
+use Tobento\Service\Storage\Items;
 
-// Create Acl.
-$acl = new Acl();
-
-// Check permissions for current user.
-if ($acl->can('articles.read')) {
-    // user has permission to read articles.
-}
-
-// Check permission for specific user.
-if ($acl->cant(key: 'articles.read', user: $user)) {
-    // user has not permission to read articles.
-}
-
-// You can check multiple permissions too.
-if ($acl->can('articles.create|articles.update')) {
-    // user has permission to create and update articles.
-}
-
-// Multiple permissions with parameters.
-if ($acl->can('articles.create|resource', ['resource' => [$article->getUser()]])) {
-    // user has permission to create and access the specific article.
-}
-```
-
-Checking permissions on Authorizable object:
-
-For more information on Helper Function visit [tobento/helper-function](https://github.com/tobento-ch/helper-function)
-
-```php
-use Tobento\Service\HelperFunction\Functions;
-use Psr\Container\ContainerInterface;
-use Tobento\Service\Di\Container;
-use Tobento\Service\Acl\Acl;
-use Tobento\Service\Acl\AclInterface;
-use Tobento\Service\Acl\Authorizable;
-use Tobento\Service\Acl\AuthorizableAware;
-use Tobento\Service\Acl\Role;
-
-// create container.
-$container = new Container();
-
-// Set up Helper Function acl() for supporting
-// checking permission directly on Authorizable objects.
-$functions = new Functions();
-$functions->set(ContainerInterface::class, $container);
-
-// Register Acl functions.
-$functions->register('dir/to/acl/functions.php');
-
-// User class example.
-class User implements Authorizable
-{
-    use AuthorizableAware;
-    
-    public function __construct(
-        protected string $name,
-    ) {}
-}
-
-// Create Acl.
-$acl = new Acl();
-
-// Add Acl to container.
-$container->set(AclInterface::class, $acl);
-
-// Adding rules.
-$acl->rule('articles.read');
-
-// Create role.
-$guestRole = new Role('guest');
-
-// Adding permissions on role.
-$guestRole->addPermissions(['articles.read']);
-
-// Create and set user role.
-$user = (new User('Nick'))->setRole($guestRole);
-
-// Check permissions on user.
-if ($user->can('articles.read')) {
-    // user has permission to read articles.
-}
-
-// check permission for specific user.
-if ($user->cant('articles.read')) {
-    // user has not permission to read articles.
-}
-```
-
-## Roles
-
-Working with roles.
-
-```php
-use Tobento\Service\Acl\Acl;
-use Tobento\Service\Acl\Role;
-use Tobento\Service\Acl\RoleInterface;
-
-// Create Acl.
-$acl = new Acl();
-
-// Set roles on acl for later reusage if needed.
-// Role must implement RoleInterface, otherwise it is ignored.
-$acl->setRoles([
-    new Role('guest'),
-    new Role('editor'),
+$items = new Items([
+    'foo' => ['title' => 'Title'],
 ]);
 
-// Get roles.
-foreach($acl->getRoles() as $role)
-{
-    $key = $role->key();
-    $active = $role->active();
-    $areas = $role->areas();
-    $name = $role->name();
-}
+var_dump($items instanceof ItemsInterface);
+// bool(true)
 
-// Get Specific role.
-$role = $acl->getRole('editor');
+var_dump($items->get('foo.title'));
+// string(5) "Title"
 
-// Check if role exists.
-if ($acl->hasRole('editor')) {
-    // editor role exists.
-}
+// returns the default value if the key does not exist.
+var_dump($items->get('foo.sku', 'Sku'));
+// string(3) "Sku"
+```
+
+**all**
+
+Returns all items.
+
+```php
+use Tobento\Service\Storage\Items;
+
+$items = new Items([
+    'foo' => ['title' => 'Title'],
+]);
+
+var_dump($items->all());
+// array(1) { ["foo"]=> array(1) { ["title"]=> string(5) "Title" } }
+```
+
+**collection**
+
+Returns a new Collection with the items.
+
+```php
+use Tobento\Service\Storage\Items;
+use Tobento\Service\Collection\Collection;
+
+$items = new Items([
+    'foo' => ['title' => 'Title'],
+]);
+
+var_dump($items->collection() instanceof Collection);
+// bool(true)
+```
+
+Check out the [Collection](https://github.com/tobento-ch/service-collection#collection) to learn more about it.
+
+## Result Interface
+
+```php
+use Tobento\Service\Storage\ResultInterface;
+use Tobento\Service\Storage\ItemsInterface;
+use Tobento\Service\Storage\ItemInterface;
+use Tobento\Service\Storage\Result;
+use Tobento\Service\Storage\Items;
+use Tobento\Service\Storage\Item;
+
+$result = new Result(
+    action: 'update',
+    item: new Item(['title' => 'Title']),
+    items: new Items(['foo' => ['title' => 'Title']]),
+);
+
+var_dump($result instanceof ResultInterface);
+// bool(true)
+
+var_dump($result->item() instanceof ItemInterface);
+// bool(true)
+
+var_dump($result->items() instanceof ItemsInterface);
+// bool(true)
+
+var_dump($result->itemsCount());
+// int(1)
+```
+
+## Tables
+
+Tables are used by the storages for verifying table and column names for building queries.
+
+**add**
+
+```php
+use Tobento\Service\Storage\Tables\Tables;
+
+$tables = new Tables();
+$tables->add(
+    table: 'products',
+    columns: ['id', 'sku'],
+    primaryKey: 'id' // or null if none
+);
 ```
 
 # Credits

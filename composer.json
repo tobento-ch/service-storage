@@ -1,11 +1,12 @@
 {
-    "name": "tobento/service-acl",
+    "name": "tobento/service-storage",
     "type": "library",
-    "description": "A simple role and user-level access control system.",
+    "description": "A storage interface for storing and fetching items.",
     "keywords": [
         "tobento",
         "package",
-        "acl"
+        "storage",
+        "database"
     ],
     "homepage": "https://www.tobento.ch",
     "license": "MIT",
@@ -20,22 +21,28 @@
     "prefer-stable": true,
     "require": {
         "php": ">=8.0",
-        "tobento/service-helper-function": "^1.0"
+        "tobento/service-collection": "^1.0",
+        "tobento/service-support": "^1.0",
+        "tobento/service-filesystem": "^1.0",
+        "tobento/service-file-creator": "^1.0"
     },
     "require-dev": {
-        "phpunit/phpunit": "^9.5"
+        "phpunit/phpunit": "^9.5",
+        "vimeo/psalm": "^4.0",
+        "tobento/service-database": "^1.0"
     },    
     "autoload": {
         "psr-4": {
-            "Tobento\\Service\\Acl\\": "src"
+            "Tobento\\Service\\Storage\\": "src"
         }
     },
     "autoload-dev": {
         "psr-4": {
-            "Tobento\\Service\\Acl\\Test\\": "tests"
+            "Tobento\\Service\\Storage\\Test\\": "tests"
         }
     },
     "scripts": {
-        "test": "phpunit --testdox --colors=always"
+        "test": "phpunit --testdox --colors=always",
+        "psalm": "vendor/bin/psalm"
     }
 }
