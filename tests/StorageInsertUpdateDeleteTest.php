@@ -183,6 +183,13 @@ abstract class StorageInsertUpdateDeleteTest extends TestCase
         );       
     }
     
+    public function testInsertWithEmptyItemReturnsNull()
+    {
+        $result = $this->storage->table('products')->insert([]);
+        
+        $this->assertNull($result);       
+    }
+    
     public function testUpdateSingleWithWhereId()
     {
         $result = $this->storage->table('products')->where('id', '=', 3)->update([
@@ -270,6 +277,13 @@ abstract class StorageInsertUpdateDeleteTest extends TestCase
             ],
             $this->storage->table('products')->find(3)?->all()
         );
+    }
+    
+    public function testUpdateWithEmptyItemReturnsNull()
+    {
+        $result = $this->storage->table('products')->update([]);
+        
+        $this->assertNull($result);       
     }    
  
     public function testUpdateOrInsertWithWhereIdExistsUpdates()
@@ -418,6 +432,20 @@ abstract class StorageInsertUpdateDeleteTest extends TestCase
         );
     }
     
+    public function testUpdateOrInsertWithEmptyItemReturnsNull()
+    {
+        $result = $this->storage->table('products')->updateOrInsert(
+            [
+                'id' => 3,
+            ],
+            [
+                //'sku' => 'NEW',
+            ]
+        );
+        
+        $this->assertNull($result);       
+    }    
+    
     public function testDeleteSingleWithWhereId()
     {
         $result = $this->storage->table('products')->where('id', '=', 3)->delete();
@@ -456,5 +484,12 @@ abstract class StorageInsertUpdateDeleteTest extends TestCase
         );
         
         $this->assertSame(3, $result->itemsCount());
+    }
+    
+    public function testDeleteIfNoDeletionReturnsResultInterface()
+    {
+        $result = $this->storage->table('products')->where('id', '=', 999)->delete();
+        
+        $this->assertSame(0, $result->itemsCount());
     }    
 }
