@@ -295,7 +295,11 @@ class InMemoryStorage extends Storage
      * @return null|ResultInterface The result on success, otherwise null.
      */    
     public function insert(array $item): null|ResultInterface
-    {        
+    {
+        if (empty($item)) {
+            return null;    
+        }
+        
         $grammar = (new StorableTablesGrammar($this, $this->tables()))
             ->table($this->table ?? '')
             ->insert($item);
@@ -322,9 +326,13 @@ class InMemoryStorage extends Storage
      *
      * @param array $item The item data
      * @return null|ResultInterface The result on success, otherwise null.
-     */    
+     */
     public function update(array $item): null|ResultInterface
     {
+        if (empty($item)) {
+            return null;    
+        }
+        
         $grammar = (new StorableTablesGrammar($this, $this->tables()))
             ->table($this->table ?? '')
             ->wheres($this->wheres)
