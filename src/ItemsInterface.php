@@ -44,5 +44,19 @@ interface ItemsInterface extends ArrayAccess, Countable, IteratorAggregate
      *
      * @return Collection
      */
-    public function collection(): Collection;    
+    public function collection(): Collection;
+    
+    /**
+     * Returns the action name.
+     *
+     * @return string
+     */    
+    public function action(): string;
+    
+    /**
+     * Returns the first item.
+     *
+     * @return null|array
+     */    
+    public function first(): null|array;    
 }

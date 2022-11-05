@@ -15,7 +15,6 @@ namespace Tobento\Service\Storage\Test;
 
 use PHPUnit\Framework\TestCase;
 use Tobento\Service\Database\Schema\Table;
-use Tobento\Service\Database\Schema\Items;
 use Tobento\Service\Storage\Tables\Tables;
 use Tobento\Service\Storage\Tables\TablesInterface;
 use Tobento\Service\Storage\StorageInterface;
@@ -65,7 +64,7 @@ abstract class StorageGroupByTest extends TestCase
         $tableProducts->string('sku', 100)->nullable(false)->default('');
         $tableProducts->decimal('price', 15, 2);
         $tableProducts->string('title')->nullable(false)->default('');
-        $tableProducts->items(new Items($this->products));
+        $tableProducts->items($this->products);
         $this->tableProducts = $tableProducts;
         
         $tableProductsLg = new Table(name: 'products_lg');
@@ -74,7 +73,7 @@ abstract class StorageGroupByTest extends TestCase
         $tableProductsLg->string('title')->nullable(false)->default('');
         $tableProductsLg->text('description');
         $tableProductsLg->json('options');
-        $tableProductsLg->items(new Items($this->productsLg));
+        $tableProductsLg->items($this->productsLg);
         $this->tableProductsLg = $tableProductsLg;
     }
 

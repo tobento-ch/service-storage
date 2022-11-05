@@ -63,6 +63,13 @@ class ItemsTest extends TestCase
         $this->assertSame(2, (new Items(['key' => 'value', 'foo' => 'Foo']))->count());
     }
     
+    public function testCountMethodUsesItemsCountInsteadIfSet()
+    {
+        $items = new Items([['foo' => 'Foo']], itemsCount: 3);
+        
+        $this->assertSame(3, $items->count());
+    }
+    
     public function testToArrayMethod()
     {
         $items = new Items(['key' => 'value']);
@@ -81,5 +88,29 @@ class ItemsTest extends TestCase
             '{"key":"value"}',
             $items->toJson()
         );
-    }    
+    }
+    
+    public function testActionMethod()
+    {
+        $item = new Items(['key' => 'value'], action: 'get');
+        
+        $this->assertSame('get', $item->action());
+    }
+    
+    public function testFirstMethod()
+    {
+        $items = new Items([
+            ['foo' => 'Foo'],
+            ['bar' => 'Bar'],
+        ]);
+        
+        $this->assertSame(['foo' => 'Foo'], $items->first());
+    }
+    
+    public function testFirstMethodIfNoItemsReturnNull()
+    {
+        $items = new Items();
+        
+        $this->assertSame(null, $items->first());
+    }
 }

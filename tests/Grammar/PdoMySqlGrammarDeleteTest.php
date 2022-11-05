@@ -37,7 +37,7 @@ class PdoMySqlGrammarDeleteTest extends TestCase
     {
         $grammar = (new PdoMySqlGrammar($this->tables))
             ->table('products')
-            ->delete();
+            ->delete(return: null);
         
         $this->assertSame(
             [
@@ -57,7 +57,7 @@ class PdoMySqlGrammarDeleteTest extends TestCase
     {
         $grammar = (new PdoMySqlGrammar($this->tables))
             ->table('products p')
-            ->delete();
+            ->delete(return: null);
         
         $this->assertSame(
             [
@@ -86,7 +86,7 @@ class PdoMySqlGrammarDeleteTest extends TestCase
                     'boolean' => 'and',
                 ],
             ])
-            ->delete();
+            ->delete(return: null);
         
         $this->assertSame(
             [
@@ -100,5 +100,23 @@ class PdoMySqlGrammarDeleteTest extends TestCase
                 $grammar->getBindings()
             ]
         );   
-    }    
+    }
+    
+    public function testDeleteReturning()
+    {
+        $grammar = (new PdoMySqlGrammar($this->tables))
+            ->table('products')
+            ->delete();
+        
+        $this->assertSame(
+            [
+                'DELETE FROM `products` RETURNING `id`,`sku`,`price`,`title`',
+                [],
+            ],
+            [
+                $grammar->getStatement(),
+                $grammar->getBindings()
+            ]
+        );   
+    }
 }

@@ -15,7 +15,6 @@ namespace Tobento\Service\Storage\Test;
 
 use PHPUnit\Framework\TestCase;
 use Tobento\Service\Database\Schema\Table;
-use Tobento\Service\Database\Schema\Items;
 use Tobento\Service\Storage\Tables\Tables;
 use Tobento\Service\Storage\Tables\TablesInterface;
 use Tobento\Service\Storage\StorageInterface;
@@ -66,7 +65,7 @@ abstract class StorageJsonInsertUpdateTest extends TestCase
         $tableProducts->decimal('price', 15, 2);
         $tableProducts->string('title')->nullable(false)->default('');
         $tableProducts->json('data')->nullable(false)->default('');
-        $tableProducts->items(new Items($this->products));
+        $tableProducts->items($this->products);
         $this->tableProducts = $tableProducts;
         
         $tableProductsLg = new Table(name: 'products_lg');
@@ -75,7 +74,7 @@ abstract class StorageJsonInsertUpdateTest extends TestCase
         $tableProductsLg->string('title')->nullable(false)->default('');
         $tableProductsLg->text('description');
         $tableProductsLg->json('options');
-        $tableProductsLg->items(new Items($this->productsLg));
+        $tableProductsLg->items($this->productsLg);
         $this->tableProductsLg = $tableProductsLg;
     }
 
@@ -86,11 +85,11 @@ abstract class StorageJsonInsertUpdateTest extends TestCase
     
     public function testInsertWithColumnsSpecifiedTwice()
     {
-        $result = $this->storage->table('products')->insert([
+        $insertedItem = $this->storage->table('products')->insert([
             'sku' => 'glue new',
             'data->foo' => 'Foo',
             'data->bar' => 'Bar',
-        ]);
+        ], return: ['id', 'sku', 'data']);
             
         $this->assertEquals(
             [
@@ -98,12 +97,12 @@ abstract class StorageJsonInsertUpdateTest extends TestCase
                 'data' => 'Bar',
                 'id' => 7,
             ],
-            $result->item()->all()
+            $insertedItem->all()
         );
         
         $this->assertEquals(
             'insert',
-            $result->action()
+            $insertedItem->action()
         );
         
         $item = $this->storage->table('products')->find(7)?->all();
@@ -122,23 +121,23 @@ abstract class StorageJsonInsertUpdateTest extends TestCase
     
     public function testInsertWithArrayValue()
     {
-        $result = $this->storage->table('products')->insert([
+        $insertedItem = $this->storage->table('products')->insert([
             'sku' => 'glue new',
             'data->foo' => ['Foo'],
-        ]);
-            
+        ], return: ['id', 'sku']);
+        
         $this->assertEquals(
             [
                 'sku' => 'glue new',
-                'data' => ['Foo'],
+                //'data' => '["Foo"]', // ['Foo'],
                 'id' => 7,
             ],
-            $result->item()->all()
+            $insertedItem->all()
         );
         
         $this->assertEquals(
             'insert',
-            $result->action()
+            $insertedItem->action()
         );
         
         $item = $this->storage->table('products')->find(7)?->all();
@@ -157,22 +156,25 @@ abstract class StorageJsonInsertUpdateTest extends TestCase
 
     public function testUpdate()
     {
-        $result = $this->storage->table('products')->where('id', '=', 3)->update([
+        $updatedItems = $this->storage->table('products')->where('id', '=', 3)->update([
             'sku' => 'glue new',
             'data->foo' => 'Foo',
         ]);
             
-        $this->assertEquals(
+        /*$this->assertEquals(
             [
+                'id' => 2,
                 'sku' => 'glue new',
-                'data->foo' => 'Foo',
+                'data' => '{"color":"blue","colors":["blue","red"],"foo":"Foo","options":{"language":"en"}}',
+                'price' => '33.05',
+                'title' => '',                
             ],
-            $result->item()->all()
-        );
+            $updatedItems->first()
+        );*/
         
         $this->assertEquals(
             'update',
-            $result->action()
+            $updatedItems->action()
         );
         
         $item = $this->storage->table('products')->find(3)?->all();;
@@ -185,14 +187,14 @@ abstract class StorageJsonInsertUpdateTest extends TestCase
                 'id' => 3,
                 'title' => '',
                 'data' => json_decode(
-                    '{"color": "blue", "colors": ["blue", "red"], "foo": "Foo", "options": {"language": "en"}}',
+                    '{"color": "blue", "colors": ["blue", "red"], "foo":"Foo", "options": {"language": "en"}}',
                     true
                 ),
             ],
             $item
         );
 
-        $this->assertSame(1, $result->itemsCount());
+        $this->assertSame(1, $updatedItems->count());
     }
     
     /*
@@ -231,22 +233,25 @@ abstract class StorageJsonInsertUpdateTest extends TestCase
     
     public function testUpdateWithEmptyValueDoesNotAssignValueFromJsonPath()
     {
-        $result = $this->storage->table('products')->where('id', '=', 2)->update([
+        $updatedItems = $this->storage->table('products')->where('id', '=', 2)->update([
             'sku' => 'glue new',
             'data->foo' => 'Foo',
         ]);
             
-        $this->assertEquals(
+        /*$this->assertEquals(
             [
+                'id' => 2,
                 'sku' => 'glue new',
-                'data->foo' => 'Foo', // should be 'data' => ''
+                'data' => '',
+                'price' => '1.56',
+                'title' => '',
             ],
-            $result->item()->all()
-        );
+            $updatedItems->first()
+        );*/
         
         $this->assertEquals(
             'update',
-            $result->action()
+            $updatedItems->action()
         );
         
         $item = $this->storage->table('products')->find(2)?->all();
@@ -262,29 +267,20 @@ abstract class StorageJsonInsertUpdateTest extends TestCase
             $item
         );
 
-        $this->assertSame(1, $result->itemsCount());
+        $this->assertSame(1, $updatedItems->count());
     }
     
     public function testUpdateSetValueIfPathDoesNotExist()
     {
-        $result = $this->storage->table('products')->where('id', '=', 3)->update([
+        $updatedItems = $this->storage->table('products')->where('id', '=', 3)->update([
             'sku' => 'glue new',
             'data->cars' => 'bmw',
             'data->country' => 'CH',
         ]);
-            
-        $this->assertEquals(
-            [
-                'sku' => 'glue new',
-                'data->cars' => 'bmw',
-                'data->country' => 'CH',
-            ],
-            $result->item()->all()
-        );
         
         $this->assertEquals(
             'update',
-            $result->action()
+            $updatedItems->action()
         );
         
         $item = $this->storage->table('products')->find(3)?->all();
@@ -304,6 +300,6 @@ abstract class StorageJsonInsertUpdateTest extends TestCase
             $item
         );
 
-        $this->assertSame(1, $result->itemsCount());
+        $this->assertSame(1, $updatedItems->count());
     }    
 }

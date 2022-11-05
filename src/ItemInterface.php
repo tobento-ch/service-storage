@@ -44,5 +44,12 @@ interface ItemInterface extends ArrayAccess, Countable, IteratorAggregate
      *
      * @return Collection
      */
-    public function collection(): Collection;    
+    public function collection(): Collection;
+    
+    /**
+     * Returns the action name.
+     *
+     * @return string
+     */    
+    public function action(): string;
 }

@@ -21,6 +21,7 @@ use Tobento\Service\Storage\Query\SubQueryWhere;
 use Tobento\Service\Storage\Query\SubQuery;
 use Tobento\Service\Storage\Query\JoinClause;
 use Tobento\Service\Collection\Arr;
+use Tobento\Service\Iterable\Iter;
 use JsonException;
 use Throwable;
 
@@ -65,6 +66,10 @@ class StorableTablesGrammar extends Grammar
         if ($this->insert !== null) {
             return $this->items = $this->executeInsertStatement();
         }
+        
+        if ($this->insertItems !== null) {
+            return $this->items = $this->executeInsertItemsStatement();
+        }        
     
         if ($this->update !== null) {
             return $this->items = $this->executeUpdateStatement();
@@ -91,7 +96,7 @@ class StorableTablesGrammar extends Grammar
         $this->queryTables->addTable($table);
         
         $items = $this->storage->fetchItems($table->name());
-        $items = $this->iterableToArray($items);
+        $items = Iter::toArray(iterable: $items);
         
         // add table alias if any
         $items = $this->addTableAliasToItemKeys($items, $table->alias());
@@ -161,7 +166,7 @@ class StorableTablesGrammar extends Grammar
         }
         
         $items = $this->storage->fetchItems($table->name());
-        $items = $this->iterableToArray($items);
+        $items = Iter::toArray(iterable: $items);
         
         // get only those values from the columns verified.
         $item = array_intersect_key($inserts, array_flip($columns));
@@ -171,6 +176,14 @@ class StorableTablesGrammar extends Grammar
         }
         
         $this->item = $item;
+        
+        if (is_array($this->return)) {
+            $this->item = array_intersect_key($this->item, array_flip($this->return));
+        }
+        
+        if (is_null($this->return)) {
+            $this->item = [];
+        }
         
         foreach($item as $key => $value) {
             $item[$key] = is_array($value) ? json_encode($value) : $value;
@@ -182,6 +195,81 @@ class StorableTablesGrammar extends Grammar
         
         return $item;
     }
+    
+    /**
+     * Execute the insert statement
+     *
+     * @return null|array The item inserted or null.
+     */    
+    protected function executeInsertItemsStatement(): null|array
+    {
+        if (is_null($table = $this->tables->verifyTable($this->table))) {
+            throw new GrammarException('Invalid Table ['.(string)$this->table.']!');
+        }
+        
+        if (is_null($this->insertItems)) {
+            return null;
+        }        
+        
+        // joins are (currently) not supported so, we can safely remove table alias.
+        $table = $table->withAlias(null);
+            
+        $this->queryTables->addTable($table);
+        
+        // update table without alias.
+        $this->table($table->name());
+        
+        $insertItems = Iter::toArray(iterable: $this->insertItems);
+        
+        $firstItem = $insertItems[array_key_first($insertItems)] ?? [];
+        $firstItemColumns = [];
+        
+        foreach(array_keys($firstItem) as $name) {
+            $firstItemColumns[] = (new Column($name))->name();
+        }
+        
+        $queryTables = $this->queryTables->withColumns($firstItemColumns);
+        $columns = $queryTables->getColumnNames();
+        
+        if (empty($columns)) {
+            return null;
+        }
+        
+        $items = $this->storage->fetchItems($table->name());
+        $items = Iter::toArray(iterable: $items);
+        $itemsCreated = [];
+        $flipColumns =  array_flip($columns);
+        
+        if ($table->primaryKey()) {
+            $id = $this->autoIncrement($table->primaryKey(), $items);
+        }
+        
+        foreach($insertItems as $item) {
+            // get only those values from the columns verified;
+            $item = array_intersect_key($item, $flipColumns);
+            
+            if ($table->primaryKey()) {
+                $item[$table->primaryKey()] ??= $id;
+                $id++;
+            }
+            
+            foreach($item as $key => $value) {
+                $item[$key] = is_array($value) ? json_encode($value) : $value;
+            }
+            
+            $items[] = $item;
+            
+            if (is_array($this->return) && !empty($this->return)) {
+                $item = array_intersect_key($item, array_flip($this->return));
+            }
+            
+            $itemsCreated[] = $item;
+        }
+        
+        $this->storage->storeItems($table->name(), $items);
+        
+        return $itemsCreated;        
+    }    
 
     /**
      * Auto increment.
@@ -263,26 +351,31 @@ class StorableTablesGrammar extends Grammar
         $this->index = null; // do not allow index for update.
         
         $foundItems = $this->executeSelectStatement();
+        $itemsUpdated = [];
         
         foreach($foundItems as $index => $foundItem)
-        {            
-            $foundItems[$index] = array_merge($foundItem, $item);
+        {
+            $updatedItem = array_merge($foundItem, $item);
             
-            $foundItems[$index] = $this->updateItemWithJsonColumns(
-                $foundItems[$index],
-                $jsonColumns,
-                $this->update
-            );
+            $updatedItem = $this->updateItemWithJsonColumns($updatedItem, $jsonColumns, $this->update);
+            
+            $foundItems[$index] = $updatedItem;
+                        
+            if (is_array($this->return) && !empty($this->return)) {
+                $updatedItem = array_intersect_key($updatedItem, array_flip($this->return));
+            }
+            
+            $itemsUpdated[$index] = $updatedItem;
         }
         
         $items = $this->storage->fetchItems($table->name());
-        $items = $this->iterableToArray($items);
+        $items = Iter::toArray(iterable: $items);
 
         $items = array_replace($items, $foundItems);
         
         $this->storage->storeItems($table->name(), $items);
         
-        return $foundItems;
+        return $itemsUpdated;
     }
 
     /**
@@ -352,11 +445,24 @@ class StorableTablesGrammar extends Grammar
         $foundItems = $this->executeSelectStatement();
         
         $items = $this->storage->fetchItems($table->name());
-        $items = $this->iterableToArray($items);
+        $items = Iter::toArray(iterable: $items);
         
         $items = array_diff_key($items, $foundItems);                
         
         $this->storage->storeItems($table->name(), $items);
+        
+        if (is_null($this->return)) {
+            return [];
+        }
+        
+        if (!empty($this->return)) {
+            
+            $return = array_flip($this->return);
+                
+            foreach($foundItems as $key => $item) {
+                $foundItems[$key] = array_intersect_key($item, $return);
+            }
+        }
         
         return $foundItems;
     }
@@ -555,7 +661,7 @@ class StorableTablesGrammar extends Grammar
         $this->queryTables->addTable($table);
 
         $joinItems = $this->storage->fetchItems($table->name());
-        $joinItems = $this->iterableToArray($joinItems);
+        $joinItems = Iter::toArray(iterable: $joinItems);
         
         if (empty($joinItems)) {
             $this->queryTables->removeTable($join->table());
@@ -1810,16 +1916,5 @@ class StorableTablesGrammar extends Grammar
             ->orders($storage->getOrders())
             ->limit($storage->getLimit())
             ->bindings($storage->getBindings());
-    }
-    
-    /**
-     * iterableToArray
-     *
-     * @param iterable $iterable
-     * @return array
-     */    
-    protected function iterableToArray(iterable $iterable): array
-    {
-        return is_array($iterable) ? $iterable : iterator_to_array($iterable);
     }
 }

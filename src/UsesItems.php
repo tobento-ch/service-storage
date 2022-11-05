@@ -152,19 +152,4 @@ trait UsesItems
     {
         unset($this->items[$offset]);
     }
-    
-    /**
-     * iterableToArray.
-     * 
-     * @param iterable $items
-     * @return array
-     */
-    protected function iterableToArray(iterable $items): array
-    {
-        if (is_array($items)) {
-            return $items;
-        }
-        
-        return iterator_to_array($items);
-    }    
 }

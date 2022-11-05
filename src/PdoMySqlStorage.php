@@ -26,8 +26,13 @@ class PdoMySqlStorage extends Storage
 {
     /**
      * @var int
-     */    
+     */
     protected int $transactionLevel = 0;
+    
+    /**
+     * @var int
+     */
+    protected null|array $chunk = null;
     
     /**
      * Create a new PdoMySqlStorage.
@@ -77,16 +82,8 @@ class PdoMySqlStorage extends Storage
         
         $pdoStatement = $this->pdo->prepare('TRUNCATE `'.$table->name().'`');
         $pdoStatement->execute();
-        
-        $stored = [];
-        
-        foreach($items as $item)
-        {
-            $result = $this->table($table->name())->insert($item);
-            $stored[] = $result->item()->all();
-        }
-        
-        return $stored;
+
+        return $this->table($table->name())->insertItems($items);
     }
     
     /**
@@ -101,7 +98,13 @@ class PdoMySqlStorage extends Storage
         
         $primaryKey = $primaryKey === null ? 'id' : $primaryKey;
         
-        return $this->where($primaryKey, '=', $id)->first();
+        $item = $this->where($primaryKey, '=', $id)->first();
+        
+        if ($item && $item instanceof Item) {
+            return $item->withAction('find');
+        }
+        
+        return $item;
     }
     
     /**
@@ -134,7 +137,7 @@ class PdoMySqlStorage extends Storage
         $this->clear();
         
         $data = $pdoStatement->fetch(PDO::FETCH_ASSOC);
-        return is_array($data) ? new Item($data) : null;
+        return is_array($data) ? new Item($data, action: 'first') : null;
     }
         
     /**
@@ -156,7 +159,6 @@ class PdoMySqlStorage extends Storage
             ->index($this->index)
             ->bindings($this->bindings);
         
-        
         $fetchMode = PDO::FETCH_ASSOC;
         
         if ($this->index) {
@@ -166,15 +168,15 @@ class PdoMySqlStorage extends Storage
         $this->grammar = $grammar;
 
         if ($this->skipQuery) {
-            return new Items();
+            return new Items(action: 'get');
         }
         
         $pdoStatement = $this->pdo->prepare($grammar->getStatement());
         $pdoStatement->execute($grammar->getBindings());
         
         $this->clear();
-        
-        return new Items($pdoStatement->fetchAll($fetchMode));
+
+        return new Items($pdoStatement->fetchAll($fetchMode), action: 'get');
     }
 
     /**
@@ -185,10 +187,10 @@ class PdoMySqlStorage extends Storage
      * @return ItemInterface
      */
     public function column(string $column, null|string $key = null): ItemInterface
-    {        
+    {
         if (is_null($column = $this->tables()->verifyColumn($column))) {
             $this->clear();
-            return new Item();
+            return new Item(action: 'column');
         }
         
         $this->select($column->column());
@@ -220,13 +222,13 @@ class PdoMySqlStorage extends Storage
         $this->grammar = $grammar;        
 
         if ($this->skipQuery) {
-            return new Item();
+            return new Item(action: 'column');
         }
                 
         $pdoStatement = $this->pdo->prepare($grammar->getStatement());
         $pdoStatement->execute($grammar->getBindings());
         $this->clear();
-        return new Item($pdoStatement->fetchAll($fetchMode));
+        return new Item($pdoStatement->fetchAll($fetchMode), action: 'column');
     }
 
     /**
@@ -262,15 +264,19 @@ class PdoMySqlStorage extends Storage
     }
 
     /**
-     * Insert item(s).
+     * Insert an item.
      *
      * @param array $item The item data
-     * @return null|ResultInterface The result on success, otherwise null.
+     * @param null|array $return The columns to be returned.
+     * @return null|ItemInterface The item on success, otherwise null.
      */    
-    public function insert(array $item): null|ResultInterface
+    public function insert(array $item, null|array $return = []): null|ItemInterface
     {
         $table = $this->table;
-        $grammar = (new PdoMySqlGrammar($this->tables()))->table($table)->insert($item);
+        $grammar = (new PdoMySqlGrammar($this->tables()))
+            ->table($table)
+            ->insert($item, $return);
+        
         $this->grammar = $grammar;
 
         if ($this->skipQuery) {
@@ -283,46 +289,76 @@ class PdoMySqlStorage extends Storage
         {
             $pdoStatement = $this->pdo->prepare($statement);
             $pdoStatement->execute($grammar->getBindings());
-            $item = $grammar->getItem();
             
-            if ($primaryKey = $this->tables()->getPrimaryKey($table))
-            {
-                $item[$primaryKey] = $item[$primaryKey] ?? (int) $this->pdo->lastInsertId();
+            if (str_contains($statement, 'RETURNING')) {
+                return new Item($pdoStatement->fetch(PDO::FETCH_ASSOC), action: 'insert');
             }
             
-            return new Result(
-                action: 'insert',
-                item: new Item($item),
-                items: new Items(),
-            );            
+            return new Item(action: 'insert');
         }
         
         return null;
+    }
+    
+    /**
+     * Insert items.
+     *
+     * @param iterable $items
+     * @param null|array $return The columns to be returned.
+     * @return ItemsInterface
+     */
+    public function insertItems(iterable $items, null|array $return = []): ItemsInterface
+    {
+        $table = $this->table;
+        
+        if ($this->skipQuery) {
+            $this->grammar = (new PdoMySqlGrammar($this->tables()))
+                ->table($table)
+                ->insertItems($items, $return);
+            return new Items(action: 'insertItems');
+        }
+
+        $this->clear();
+        
+        $grammar = (new PdoMySqlGrammar($this->tables()))
+            ->table($table)
+            ->insertItems($items, $return);
+
+        if ($statement = $grammar->getStatement())
+        {
+            $pdoStatement = $this->pdo->prepare($statement);
+            $pdoStatement->execute($grammar->getBindings());
+
+            if (str_contains($statement, 'RETURNING')) {
+                return new Items($pdoStatement->fetchAll(PDO::FETCH_ASSOC), action: 'insertItems');
+            }
+            
+            return new Items(action: 'insertItems', itemsCount: $pdoStatement->rowCount());
+        }
+        
+        return new Items(action: 'insertItems');
     }
 
     /**
      * Update item(s).
      *
      * @param array $item The item data
-     * @return null|ResultInterface The result on success, otherwise null.
-     */    
-    public function update(array $item): null|ResultInterface
+     * @param null|array $return The columns to be returned.
+     * @return ItemsInterface The updated items.
+     */
+    public function update(array $item, null|array $return = []): ItemsInterface
     {
         $grammar = (new PdoMySqlGrammar($this->tables()))
             ->table($this->table ?? '')
             ->wheres($this->wheres)
             ->orders($this->orders)
-            ->limit($this->limit);
-        
-        $queryGrammar = clone $grammar;
-        $queryGrammar->select($this->select);
-        
-        $grammar->update($item);
+            ->limit($this->limit)
+            ->update($item, $return);
         
         $this->grammar = $grammar;
         
         if ($this->skipQuery) {
-            return null;
+            return new Items(action: 'update');
         }
         
         $this->clear();
@@ -331,17 +367,11 @@ class PdoMySqlStorage extends Storage
         {
             $pdoStatement = $this->pdo->prepare($statement);
             $pdoStatement->execute($grammar->getBindings());
-            
-            return new PdoMySqlResult(
-                action: 'update',
-                item: new Item($grammar->getItem()),
-                items: new Items(),
-                query: $queryGrammar,
-                pdo: $this->pdo,
-            );
+            // Note: returning statements are not supported!
+            return new Items(action: 'update', itemsCount: $pdoStatement->rowCount());
         }
 
-        return null;
+        return new Items(action: 'update');
     }
 
     /**
@@ -349,15 +379,20 @@ class PdoMySqlStorage extends Storage
      *
      * @param array $attributes The attributes to query.
      * @param array $item The item data
-     * @return null|ResultInterface The result on success, otherwise null.
-     */    
-    public function updateOrInsert(array $attributes, array $item): null|ResultInterface
-    {
+     * @param null|array $return The columns to be returned.
+     * @return null|ItemInterface|ItemsInterface The item(s) on success, otherwise null.
+     */
+    public function updateOrInsert(
+        array $attributes,
+        array $item,
+        null|array $return = []
+    ): null|ItemInterface|ItemsInterface {
+        
         foreach($attributes as $column => $value) {
             $this->where($column, '=', $value);
         }
         
-        // update if entity exists.
+        // update if item exists.
         if (!is_null($firstItem = $this->first()?->all()))
         {
             // Set primary key value
@@ -373,60 +408,48 @@ class PdoMySqlStorage extends Storage
                 $this->where($column, '=', $value);
             }
             
-            return $this->update($attributes + $item);
+            return $this->update($attributes + $item, $return);
         }
         
-        // create
-        return $this->insert($attributes + $item);
+        return $this->insert($attributes + $item, $return);
     }
     
     /**
      * Delete item(s).
      *
-     * @return null|ResultInterface The result on success, otherwise null.
-     */    
-    public function delete(): null|ResultInterface
+     * @param null|array $return The columns to be returned.
+     * @return ItemsInterface The deleted items.
+     */
+    public function delete(null|array $return = []): ItemsInterface
     {
         $grammar = (new PdoMySqlGrammar($this->tables()))
             ->table($this->table ?? '')
             ->wheres($this->wheres)
             ->orders($this->orders)
-            ->limit($this->limit);
-        
-        $queryGrammar = clone $grammar;
-        $queryGrammar->select($this->select);
-        
-        $grammar->delete();
-        
+            ->limit($this->limit)
+            ->delete($return);
+
         $this->grammar = $grammar;
         
         if ($this->skipQuery) {
-            return null;
+            return new Items(action: 'delete');
         }
         
         $this->clear();
-        $deletedData = [];
-        
-        if ($statement = $queryGrammar->getStatement())
-        {            
-            $pdoStatement = $this->pdo->prepare($statement);
-            $pdoStatement->execute($queryGrammar->getBindings());    
-            $deletedData = $pdoStatement->fetchAll(PDO::FETCH_ASSOC);
-        }
         
         if ($statement = $grammar->getStatement())
         {    
             $pdoStatement = $this->pdo->prepare($statement);
             $pdoStatement->execute($grammar->getBindings());
             
-            return new Result(
-                action: 'delete',
-                item: new Item(),
-                items: new Items($deletedData),
-            );
+            if (str_contains($statement, 'RETURNING')) {
+                return new Items($pdoStatement->fetchAll(PDO::FETCH_ASSOC), action: 'delete');
+            }
+            
+            return new Items(action: 'delete', itemsCount: $pdoStatement->rowCount());
         }
         
-        return null;
+        return new Items(action: 'delete');
     }
     
     /**

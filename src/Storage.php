@@ -19,6 +19,7 @@ use Tobento\Service\Storage\Grammar\GrammarInterface;
 use Tobento\Service\Storage\Query\SubQuery;
 use Tobento\Service\Storage\Query\SubQueryWhere;
 use Tobento\Service\Storage\Query\JoinClause;
+use Generator;
 use Closure;
 use Throwable;
 
@@ -55,7 +56,7 @@ abstract class Storage implements StorageInterface
     /**
      * @var array The havings constraints.
      */    
-    protected array $havings = [];    
+    protected array $havings = [];
 
     /**
      * @var array The orders constraints.
@@ -198,7 +199,7 @@ abstract class Storage implements StorageInterface
      */
     public function get(): ItemsInterface
     {
-        return new Items();
+        return new Items(action: 'get');
     }
 
     /**
@@ -227,7 +228,7 @@ abstract class Storage implements StorageInterface
      */
     public function column(string $column, null|string $key = null): ItemInterface
     {
-        return new Item();
+        return new Item(action: 'column');
     }
 
     /**
@@ -241,25 +242,38 @@ abstract class Storage implements StorageInterface
     }
 
     /**
-     * Insert item(s).
+     * Insert an item.
      *
      * @param array $item The item data
-     * @return null|ResultInterface The result on success, otherwise null.
+     * @return null|ItemInterface The item on success, otherwise null.
      */    
-    public function insert(array $item): null|ResultInterface
+    public function insert(array $item): null|ItemInterface
     {
         return null;
+    }
+    
+    /**
+     * Insert items.
+     *
+     * @param iterable $items
+     * @param null|array $return The columns to be returned.
+     * @return ItemsInterface
+     */
+    public function insertItems(iterable $items, null|array $return = []): ItemsInterface
+    {
+        return new Items(action: 'insertItems');
     }
     
     /**
      * Update item(s).
      *
      * @param array $item The item data
-     * @return null|ResultInterface The result on success, otherwise null.
-     */    
-    public function update(array $item): null|ResultInterface
+     * @param null|array $return The columns to be returned.
+     * @return ItemsInterface The updated items.
+     */
+    public function update(array $item, null|array $return = []): ItemsInterface
     {
-        return null;
+        return new Items(action: 'update');
     }
 
     /**
@@ -267,21 +281,37 @@ abstract class Storage implements StorageInterface
      *
      * @param array $attributes The attributes to query.
      * @param array $item The item data
-     * @return null|ResultInterface The result on success, otherwise null.
-     */    
-    public function updateOrInsert(array $attributes, array $item): null|ResultInterface
-    {
+     * @param null|array $return The columns to be returned.
+     * @return null|ItemInterface|ItemsInterface The item(s) on success, otherwise null.
+     */
+    public function updateOrInsert(
+        array $attributes,
+        array $item,
+        null|array $return = []
+    ): null|ItemInterface|ItemsInterface {
         return null;
     }
     
     /**
      * Delete item(s).
      *
-     * @return null|ResultInterface The result on success, otherwise null.
-     */    
-    public function delete(): null|ResultInterface
+     * @param null|array $return The columns to be returned.
+     * @return ItemsInterface The deleted items.
+     */
+    public function delete(null|array $return = []): ItemsInterface
     {
-        return null;
+        return new Items(action: 'delete');
+    }
+    
+    /**
+     * Chunk item(s).
+     *
+     * @param int $length
+     * @return Chunking
+     */
+    public function chunk(int $length = 10000): Chunking
+    {
+        return new Chunking($this, $length);
     }
             
     /**

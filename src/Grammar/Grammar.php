@@ -86,12 +86,17 @@ abstract class Grammar implements GrammarInterface
     /**
      * @var null|string|array The select columns or null.
      */    
-    protected null|string|array $select = null;    
+    protected null|string|array $select = null;
 
     /**
-     * @var null|array The items to insert or null.
+     * @var null|array The item to insert or null.
      */    
     protected null|array $insert = null;
+    
+    /**
+     * @var null|iterable The items to insert or null.
+     */    
+    protected null|iterable $insertItems = null;
 
     /**
      * @var null|array The items to update or null.
@@ -101,7 +106,12 @@ abstract class Grammar implements GrammarInterface
     /**
      * @var null|array If to delete items.
      */    
-    protected null|array $delete = null;        
+    protected null|array $delete = null;
+    
+    /**
+     * @var null|array The return columns or null.
+     */    
+    protected null|array $return = null;
 
     /**
      * @var null|array The item inserted or updated.
@@ -244,35 +254,55 @@ abstract class Grammar implements GrammarInterface
     /**
      * The insert statement.
      *
-     * @param array $items The items ['column' => 'value', ...]
+     * @param array $item The item ['column' => 'value', ...]
+     * @param null|array $return The columns to be returned.
      * @return static $this
      */    
-    public function insert(array $items): static
+    public function insert(array $item, null|array $return = []): static
     {
-        $this->insert = $items;
+        $this->insert = $item;
+        $this->return = $return;
         return $this;
     }
+    
+    /**
+     * The insertItems statement.
+     *
+     * @param iterable $items
+     * @param null|array $return The columns to be returned.
+     * @return static $this
+     */    
+    public function insertItems(iterable $items, null|array $return = []): static
+    {
+        $this->insertItems = $items;
+        $this->return = $return;
+        return $this;
+    }    
 
     /**
      * The update statement.
      *
      * @param array $items The items ['column' => 'value', ...]
+     * @param null|array $return The columns to be returned.
      * @return static $this
      */    
-    public function update(array $items): static
+    public function update(array $items, null|array $return = []): static
     {
         $this->update = $items;
+        $this->return = $return;
         return $this;
     }
 
     /**
      * The delete statement.
      *
+     * @param null|array $return The columns to be returned.
      * @return static $this
      */    
-    public function delete(): static
+    public function delete(null|array $return = []): static
     {
         $this->delete = [];
+        $this->return = $return;
         return $this;
     }    
     

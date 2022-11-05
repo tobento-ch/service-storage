@@ -18,8 +18,10 @@ use Tobento\Service\Storage\Query\SubQueryWhere;
 use Tobento\Service\Storage\Query\SubQuery;
 use Tobento\Service\Storage\Query\JoinClause;
 use Tobento\Service\Storage\Tables\TableInterface;
+use Tobento\Service\Storage\Tables\TablesInterface;
 use Tobento\Service\Storage\Tables\ColumnInterface;
 use Tobento\Service\Storage\Tables\Column;
+use Tobento\Service\Iterable\Iter;
 
 /**
  * PdoMySqlGrammar
@@ -44,6 +46,10 @@ class PdoMySqlGrammar extends Grammar
         if ($this->insert !== null)    {
             return $this->statement = $this->getInsertStatement();
         }
+        
+        if ($this->insertItems !== null)    {
+            return $this->statement = $this->getInsertItemsStatement();
+        }        
     
         if ($this->update !== null)    {
             return $this->statement = $this->getUpdateStatement();
@@ -109,7 +115,7 @@ class PdoMySqlGrammar extends Grammar
      * Get the select statement
      *
      * @return string 'SELECT id, date_created FROM products WHERE ...' e.g.
-     */    
+     */
     protected function getSelectStatement(): string
     {
         // https://dev.mysql.com/doc/refman/8.0/en/select.html
@@ -146,6 +152,11 @@ class PdoMySqlGrammar extends Grammar
         return implode(' ', $segments);
     }
     
+    /**
+     * Get the select insert statement.
+     *
+     * @return null|string
+     */
     protected function getInsertStatement(): null|string
     {
         if (is_null($table = $this->tables->verifyTable($this->table))) {
@@ -186,8 +197,69 @@ class PdoMySqlGrammar extends Grammar
         
         $table = $this->compileTable($table, false);
         $compiledColumns = $this->compileInsertColumns($queryTables->getColumns());
+        $values = '('.implode(', ', array_fill(0, count($columns), '?')).')';
+        $return = $this->compileReturn($this->return, $this->queryTables);
         
-        return 'INSERT INTO '.$table.' ('.$compiledColumns.') VALUES ('.implode(', ', array_fill(0, count($columns), '?')).')';
+        return 'INSERT INTO '.$table.' ('.$compiledColumns.') VALUES '.$values.$return;
+    }
+    
+    /**
+     * Get the select insert items statement.
+     *
+     * @return null|string
+     */
+    protected function getInsertItemsStatement(): null|string
+    {
+        if (is_null($table = $this->tables->verifyTable($this->table))) {
+            throw new GrammarException('Invalid Table ['.(string)$this->table.']!');
+        }
+        
+        if (is_null($this->insertItems)) {
+            return null;
+        }
+        
+        $insertItems = Iter::toArray(iterable: $this->insertItems);
+
+        // joins are (currently) not supported so, we can safely remove table alias.
+        $table = $table->withAlias(null);
+            
+        $this->queryTables->addTable($table);
+        
+        // update table without alias.
+        $this->table($table->name());
+        
+        $firstItem = $insertItems[array_key_first($insertItems)] ?? [];
+        $firstItemColumns = [];
+        
+        foreach(array_keys($firstItem) as $name) {
+            $firstItemColumns[] = (new Column($name))->name();
+        }
+        
+        $queryTables = $this->queryTables->withColumns($firstItemColumns);
+        $columns = $queryTables->getColumnNames();
+        
+        if (empty($columns)) {
+            return null;
+        }
+        
+        $flipColumns =  array_flip($columns);
+        
+        foreach($insertItems as $item) {
+            // get only those values from the columns verified;
+            $values = array_intersect_key($item, $flipColumns);
+            
+            $this->bindMany(array_values($values));
+        }
+        
+        $table = $this->compileTable($table, false);
+        $compiledColumns = $this->compileInsertColumns($queryTables->getColumns());
+        
+        $itemValues = '('.implode(', ', array_fill(0, count($columns), '?')).'),';
+        $values = str_repeat($itemValues, count($insertItems));
+        $values = rtrim($values, ',');
+        $return = $this->compileReturn($this->return, $this->queryTables);
+        
+        return 'INSERT INTO '.$table.' ('.$compiledColumns.') VALUES '.$values.$return;
     }
     
     /**
@@ -244,7 +316,9 @@ class PdoMySqlGrammar extends Grammar
             'UPDATE '.$table.' SET '.$columns,
             $this->compileWheres($this->wheres),
             $this->compileOrders($this->orders),
-            $this->compileLimit($this->limit)            
+            $this->compileLimit($this->limit),
+            // not supported
+            // $this->compileReturn($this->return, $this->queryTables)
         ];
         
         $segments = array_filter($segments, fn($v) => !empty($v));
@@ -324,12 +398,39 @@ class PdoMySqlGrammar extends Grammar
             'DELETE FROM '.$this->compileTable($table, false),
             $this->compileWheres($this->wheres),
             $this->compileOrders($this->orders),
-            $this->compileLimit($this->limit)            
+            $this->compileLimit($this->limit),
+            trim($this->compileReturn($this->return, $this->queryTables))
         ];
         
         $segments = array_filter($segments, fn($v) => !empty($v));
         
         return implode(' ', $segments);
+    }
+    
+    /**
+     * Compile return columns.
+     *
+     * @param null|array $return
+     * @param TablesInterface $tables
+     * @return string The compiled return.
+     */
+    protected function compileReturn(null|array $return, TablesInterface $tables): string
+    {
+        if (is_null($return)) {
+            return '';    
+        }
+        
+        if (empty($return)) {
+            $columns = $tables->getColumns();
+        } else {
+            $columns = $tables->withColumns($return)->getColumns();
+        }
+
+        if (empty($columns)) {
+            return '';
+        }
+        
+        return ' RETURNING '.$this->compileInsertColumns($columns);
     }
 
     /**

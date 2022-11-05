@@ -40,7 +40,7 @@ class PdoMySqlGrammarInsertJsonTest extends TestCase
             ->insert([
                 'sku' => 'Sku',
                 'data->color' => 'blue',
-            ]);
+            ], return: null);
         
         $this->assertSame(
             [

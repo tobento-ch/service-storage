@@ -24,7 +24,8 @@
         "tobento/service-collection": "^1.0",
         "tobento/service-support": "^1.0",
         "tobento/service-filesystem": "^1.0",
-        "tobento/service-file-creator": "^1.0"
+        "tobento/service-file-creator": "^1.0",
+        "tobento/service-iterable": "^1.0"
     },
     "require-dev": {
         "phpunit/phpunit": "^9.5",

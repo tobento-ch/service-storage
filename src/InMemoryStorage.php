@@ -96,7 +96,13 @@ class InMemoryStorage extends Storage
         $primaryKey = $this->tables()->getPrimaryKey($this->getTable());
         $primaryKey = $primaryKey === null ? 'id' : $primaryKey;
         
-        return $this->where($primaryKey, '=', $id)->first();
+        $item = $this->where($primaryKey, '=', $id)->first();
+        
+        if ($item && $item instanceof Item) {
+            return $item->withAction('find');
+        }
+        
+        return $item;
     }
     
     /**
@@ -110,7 +116,7 @@ class InMemoryStorage extends Storage
         
         $data = $items[array_key_first($items)] ?? null;
         
-        return is_array($data) ? new Item($data) : null;
+        return is_array($data) ? new Item($data, action: 'first') : null;
     }
     
     /**
@@ -135,14 +141,14 @@ class InMemoryStorage extends Storage
         $this->grammar = $grammar;
 
         if ($this->skipQuery) {
-            return new Items();
+            return new Items(action: 'get');
         }
         
         $data = $grammar->execute();
         
         $this->clear();
         
-        return new Items(is_array($data) ? $data : []);
+        return new Items(is_array($data) ? $data : [], action: 'get');
     }
     
     /**
@@ -188,7 +194,7 @@ class InMemoryStorage extends Storage
     {
         if (is_null($column = $this->tables()->verifyColumn($column))) {
             $this->clear();
-            return new Item();
+            return new Item(action: 'column');
         }
         
         $items = $this->get()->all();
@@ -239,7 +245,7 @@ class InMemoryStorage extends Storage
             }
         }
         
-        return new Item(array_column($items, $column->name(), $columnKey?->name()));
+        return new Item(array_column($items, $column->name(), $columnKey?->name()), action: 'column');
     }
 
     /**
@@ -289,12 +295,13 @@ class InMemoryStorage extends Storage
     }
 
     /**
-     * Insert item(s).
+     * Insert an item.
      *
      * @param array $item The item data
-     * @return null|ResultInterface The result on success, otherwise null.
+     * @param null|array $return The columns to be returned.
+     * @return null|ItemInterface The item on success, otherwise null.
      */    
-    public function insert(array $item): null|ResultInterface
+    public function insert(array $item, null|array $return = []): null|ItemInterface
     {
         if (empty($item)) {
             return null;    
@@ -302,7 +309,7 @@ class InMemoryStorage extends Storage
         
         $grammar = (new StorableTablesGrammar($this, $this->tables()))
             ->table($this->table ?? '')
-            ->insert($item);
+            ->insert($item, $return);
         
         $this->grammar = $grammar;
 
@@ -314,23 +321,51 @@ class InMemoryStorage extends Storage
         
         $grammar->execute();
         
-        return new Result(
-            action: 'insert',
-            item: new Item($grammar->getItem()),
-            items: new Items(),
-        );
+        return new Item($grammar->getItem(), action: 'insert');
     }
+    
+    /**
+     * Insert items.
+     *
+     * @param iterable $items
+     * @param null|array $return The columns to be returned.
+     * @return ItemsInterface
+     */
+    public function insertItems(iterable $items, null|array $return = []): ItemsInterface
+    {
+        if ($this->skipQuery) {
+            $this->grammar = (new StorableTablesGrammar($this, $this->tables()))
+                ->table($this->table ?? '')
+                ->insertItems($items, $return);
+            return new Items(action: 'insertItems');
+        }
+
+        $this->clear();
+
+        $grammar = (new StorableTablesGrammar($this, $this->tables()))
+            ->table($this->table ?? '')
+            ->insertItems($items, $return);
+
+        $items = $grammar->execute();
+        
+        if (is_null($return)) {
+            return new Items(action: 'insertItems', itemsCount: count($items));
+        }
+        
+        return new Items(is_array($items) ? $items : [], action: 'insertItems');
+    }    
 
     /**
      * Update item(s).
      *
      * @param array $item The item data
-     * @return null|ResultInterface The result on success, otherwise null.
+     * @param null|array $return The columns to be returned.
+     * @return ItemsInterface The updated items.
      */
-    public function update(array $item): null|ResultInterface
+    public function update(array $item, null|array $return = []): ItemsInterface
     {
         if (empty($item)) {
-            return null;    
+            return new Items(action: 'update');
         }
         
         $grammar = (new StorableTablesGrammar($this, $this->tables()))
@@ -338,23 +373,23 @@ class InMemoryStorage extends Storage
             ->wheres($this->wheres)
             ->orders($this->orders)
             ->limit($this->limit)
-            ->update($item);
+            ->update($item, $return);
         
         $this->grammar = $grammar;
         
         if ($this->skipQuery) {
-            return null;
+            return new Items(action: 'update');
         }
         
         $this->clear();
         
         $items = $grammar->execute();
         
-        return new Result(
-            action: 'update',
-            item: new Item($grammar->getItem()),
-            items: new Items(!is_null($items) ? $items : []),
-        );
+        if (is_null($return)) {
+            return new Items(action: 'update', itemsCount: count($items));
+        }
+        
+        return new Items(!is_null($items) ? $items : [], action: 'update');
     }
 
     /**
@@ -362,10 +397,15 @@ class InMemoryStorage extends Storage
      *
      * @param array $attributes The attributes to query.
      * @param array $item The item data
-     * @return null|ResultInterface The result on success, otherwise null.
-     */    
-    public function updateOrInsert(array $attributes, array $item): null|ResultInterface
-    {
+     * @param null|array $return The columns to be returned.
+     * @return null|ItemInterface|ItemsInterface The item(s) on success, otherwise null.
+     */
+    public function updateOrInsert(
+        array $attributes,
+        array $item,
+        null|array $return = []
+    ): null|ItemInterface|ItemsInterface {
+        
         foreach($attributes as $column => $value) {
             $this->where($column, '=', $value);
         }
@@ -386,42 +426,39 @@ class InMemoryStorage extends Storage
                 $this->where($column, '=', $value);
             }
             
-            return $this->update($attributes + $item);
+            return $this->update($attributes + $item, $return);
         }
         
         // insert
-        return $this->insert($attributes + $item);
+        return $this->insert($attributes + $item, $return);
     }
     
     /**
      * Delete item(s).
      *
-     * @return null|ResultInterface The result on success, otherwise null.
-     */    
-    public function delete(): null|ResultInterface
+     * @param null|array $return The columns to be returned.
+     * @return ItemsInterface The deleted items.
+     */
+    public function delete(null|array $return = []): ItemsInterface
     {
         $grammar = (new StorableTablesGrammar($this, $this->tables()))
             ->table($this->table ?? '')
             ->wheres($this->wheres)
             ->orders($this->orders)
             ->limit($this->limit)
-            ->delete();
+            ->delete($return);
         
         $this->grammar = $grammar;
         
         if ($this->skipQuery) {
-            return null;
+            return new Items(action: 'delete');
         }
         
         $this->clear();
         
         $items = $grammar->execute();
         
-        return new Result(
-            action: 'delete',
-            item: new Item(),
-            items: new Items(!is_null($items) ? $items : []),
-        );
+        return new Items(!is_null($items) ? $items : [], action: 'delete');
     }
     
     /**

@@ -21,9 +21,9 @@ use Tobento\Service\Database\Schema\Table;
 use PDO;
 
 /**
- * StorageInsertUpdateDeleteTest
+ * StorageChunkTest
  */
-class StorageInsertUpdateDeleteTest extends \Tobento\Service\Storage\Test\StorageInsertUpdateDeleteTest
+class StorageChunkTest extends \Tobento\Service\Storage\Test\StorageChunkTest
 {
     protected null|PdoDatabase $database = null;
     
@@ -49,17 +49,13 @@ class StorageInsertUpdateDeleteTest extends \Tobento\Service\Storage\Test\Storag
  
         $processor = new PdoMySqlProcessor();
         $processor->process($this->tableProducts, $this->database);
-        $processor->process($this->tableProductsLg, $this->database);
         
         $this->storage = new PdoMySqlStorage($pdo, $this->tables);
     }
 
     public function tearDown(): void
     {
-        parent::tearDown();
-        
         $this->dropTable($this->tableProducts);
-        $this->dropTable($this->tableProductsLg);
     }
     
     protected function dropTable(Table $table): void

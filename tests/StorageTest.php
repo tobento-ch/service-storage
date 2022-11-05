@@ -15,7 +15,6 @@ namespace Tobento\Service\Storage\Test;
 
 use PHPUnit\Framework\TestCase;
 use Tobento\Service\Database\Schema\Table;
-use Tobento\Service\Database\Schema\Items;
 use Tobento\Service\Storage\Tables\Tables;
 use Tobento\Service\Storage\Tables\TablesInterface;
 use Tobento\Service\Storage\StorageInterface;
@@ -65,7 +64,7 @@ abstract class StorageTest extends TestCase
         $tableProducts->string('sku', 100)->nullable(false)->default('');
         $tableProducts->decimal('price', 15, 2);
         $tableProducts->string('title')->nullable(false)->default('');
-        $tableProducts->items(new Items($this->products));
+        $tableProducts->items($this->products);
         $this->tableProducts = $tableProducts;
         
         $tableProductsLg = new Table(name: 'products_lg');
@@ -73,7 +72,7 @@ abstract class StorageTest extends TestCase
         $tableProductsLg->int('language_id');
         $tableProductsLg->string('title')->nullable(false)->default('');
         $tableProductsLg->text('description');
-        $tableProductsLg->items(new Items($this->productsLg));
+        $tableProductsLg->items($this->productsLg);
         $this->tableProductsLg = $tableProductsLg;
     }
 
@@ -546,6 +545,13 @@ abstract class StorageTest extends TestCase
         );        
     }
     
+    public function testGetMethodActionMethod()
+    {        
+        $items = $this->storage->table('products')->index('id')->get();
+        
+        $this->assertSame('get', $items->action());
+    }
+    
     public function testFindMethod()
     {        
         $item = $this->storage->table('products')->find(5);
@@ -562,6 +568,13 @@ abstract class StorageTest extends TestCase
             $item
         );
     }
+    
+    public function testFindMethodActionMethod()
+    {        
+        $item = $this->storage->table('products')->find(5);
+        
+        $this->assertSame('find', $item->action());
+    }    
 
     public function testFirstMethod()
     {        
@@ -571,6 +584,13 @@ abstract class StorageTest extends TestCase
             $this->products[1],
             $item?->all()
         );        
+    }
+    
+    public function testFirstMethodActionMethod()
+    {        
+        $item = $this->storage->table('products')->first();
+        
+        $this->assertSame('first', $item->action());
     }
     
     public function testValueMethod()
@@ -602,6 +622,13 @@ abstract class StorageTest extends TestCase
             $column->all()
         );        
     }
+    
+    public function testColumnMethodActionMethod()
+    {        
+        $item = $this->storage->table('products')->column('price');
+        
+        $this->assertSame('column', $item->action());
+    }    
 
     public function testColumnWithKeyMethod()
     {        

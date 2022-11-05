@@ -18,9 +18,9 @@ use Tobento\Service\Storage\JsonFileStorage;
 use Tobento\Service\Filesystem\Dir;
 
 /**
- * StorageInsertUpdateDeleteTest
+ * StorageInsertItemsTest
  */
-class StorageInsertUpdateDeleteTest extends \Tobento\Service\Storage\Test\StorageInsertUpdateDeleteTest
+class StorageInsertItemsTest extends \Tobento\Service\Storage\Test\StorageInsertItemsTest
 {
     public function setUp(): void
     {
@@ -30,9 +30,6 @@ class StorageInsertUpdateDeleteTest extends \Tobento\Service\Storage\Test\Storag
             dir: __DIR__.'/../tmp/json-file-storage/',
             tables: $this->tables
         );
-        
-        $this->storage->storeItems($this->tableProducts->getName(), $this->tableProducts->getItems());
-        $this->storage->storeItems($this->tableProductsLg->getName(), $this->tableProductsLg->getItems());
     }
     
     public function tearDown(): void

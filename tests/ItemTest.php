@@ -81,5 +81,12 @@ class ItemTest extends TestCase
             '{"key":"value"}',
             $item->toJson()
         );
-    }    
+    }
+    
+    public function testActionMethod()
+    {
+        $item = new Item(['key' => 'value'], action: 'first');
+        
+        $this->assertSame('first', $item->action());
+    }
 }

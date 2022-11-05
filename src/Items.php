@@ -15,6 +15,7 @@ namespace Tobento\Service\Storage;
 
 use Tobento\Service\Support\Arrayable;
 use Tobento\Service\Support\Jsonable;
+use Tobento\Service\Iterable\Iter;
 
 /**
  * Items
@@ -27,10 +28,54 @@ class Items implements ItemsInterface, Arrayable, Jsonable
      * Create a new Items.
      *
      * @param iterable $items The items.
+     * @param null|int $itemsCount
+     * @param string $action The action such as insert.
      */
     final public function __construct(
-        iterable $items = []
+        iterable $items = [],
+        protected null|int $itemsCount = null,
+        protected string $action = ''
     ){
-        $this->items = $this->iterableToArray($items);
+        $this->items = Iter::toArray(iterable: $items);
+    }
+    
+    /**
+     * Returns the number of items.
+     *
+     * @return int
+     */
+    public function count(): int
+    {
+        if (!is_null($this->itemsCount)) {
+            return $this->itemsCount;
+        }
+        
+        return count($this->items);
+    }
+    
+    /**
+     * Returns the action name.
+     *
+     * @return string
+     */    
+    public function action(): string
+    {
+        return $this->action;
+    }
+    
+    /**
+     * Returns the first item.
+     *
+     * @return null|array
+     */    
+    public function first(): null|array
+    {
+        $key = array_key_first($this->items);
+        
+        if (is_null($key)) {
+            return null;
+        }
+        
+        return $this->items[$key];
     }
 }

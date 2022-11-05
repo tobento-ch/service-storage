@@ -16,6 +16,7 @@ namespace Tobento\Service\Storage;
 use Tobento\Service\Storage\Tables\TablesInterface;
 use Tobento\Service\Filesystem\JsonFile;
 use Tobento\Service\FileCreator\FileCreator;
+use Tobento\Service\Iterable\Iter;
 
 /**
  * JsonFileStorage
@@ -82,7 +83,7 @@ class JsonFileStorage extends InMemoryStorage
         }        
         
         $fileCreator = new FileCreator();
-        $fileCreator->content(json_encode($this->iterableToArray($items)))
+        $fileCreator->content(json_encode(Iter::toArray(iterable: $items)))
                     ->create(
                         $this->dir.$table->name().'.json',
                         $fileCreator::CONTENT_NEW,
@@ -90,16 +91,5 @@ class JsonFileStorage extends InMemoryStorage
                     );
 
         return $items;
-    }
-    
-    /**
-     * iterableToArray
-     *
-     * @param iterable $iterable
-     * @return array
-     */
-    protected function iterableToArray(iterable $iterable): array
-    {
-        return is_array($iterable) ? $iterable : iterator_to_array($iterable);
     }
 }

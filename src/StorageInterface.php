@@ -117,36 +117,52 @@ interface StorageInterface
     public function count(): int;
 
     /**
-     * Insert item(s).
+     * Insert an item.
      *
      * @param array $item The item data
-     * @return null|ResultInterface The result on success, otherwise null.
+     * @return null|ItemInterface The item on success, otherwise null.
      */    
-    public function insert(array $item): null|ResultInterface;
+    public function insert(array $item): null|ItemInterface;
+    
+    /**
+     * Insert items.
+     *
+     * @param iterable $items
+     * @param null|array $return The columns to be returned.
+     * @return ItemsInterface
+     */
+    public function insertItems(iterable $items, null|array $return = []): ItemsInterface;
     
     /**
      * Update item(s).
      *
      * @param array $item The item data
-     * @return null|ResultInterface The result on success, otherwise null.
-     */    
-    public function update(array $item): null|ResultInterface;
+     * @param null|array $return The columns to be returned.
+     * @return ItemsInterface The updated items.
+     */
+    public function update(array $item, null|array $return = []): ItemsInterface;
 
     /**
      * Update or insert item(s).
      *
      * @param array $attributes The attributes to query.
      * @param array $item The item data
-     * @return null|ResultInterface The result on success, otherwise null.
-     */    
-    public function updateOrInsert(array $attributes, array $item): null|ResultInterface;
+     * @param null|array $return The columns to be returned.
+     * @return null|ItemInterface|ItemsInterface The item(s) on success, otherwise null.
+     */
+    public function updateOrInsert(
+        array $attributes,
+        array $item,
+        null|array $return = []
+    ): null|ItemInterface|ItemsInterface;
     
     /**
      * Delete item(s).
      *
-     * @return null|ResultInterface The result on success, otherwise null.
-     */    
-    public function delete(): null|ResultInterface;
+     * @param null|array $return The columns to be returned.
+     * @return ItemsInterface The deleted items.
+     */
+    public function delete(null|array $return = []): ItemsInterface;
             
     /**
      * Add a inner join to the query.

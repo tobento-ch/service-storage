@@ -17,17 +17,14 @@ use PHPUnit\Framework\TestCase;
 use Tobento\Service\Storage\InMemoryStorage;
 
 /**
- * StorageInsertUpdateDeleteTest
+ * StorageChunkTest
  */
-class StorageInsertUpdateDeleteTest extends \Tobento\Service\Storage\Test\StorageInsertUpdateDeleteTest
+class StorageChunkTest extends \Tobento\Service\Storage\Test\StorageChunkTest
 {
     public function setUp(): void
     {
         parent::setUp();
         
-        $this->storage = new InMemoryStorage([
-            'products' => $this->products,
-            'products_lg' => $this->productsLg,    
-        ], $this->tables);
+        $this->storage = new InMemoryStorage([], $this->tables);
     }
 }

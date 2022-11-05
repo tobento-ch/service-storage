@@ -40,7 +40,7 @@ class PdoMySqlGrammarInsertTest extends TestCase
             ->insert([
                 'sku' => 'Sku',
                 'title' => 'Title',
-            ]);
+            ], return: null);
         
         $this->assertSame(
             [
@@ -57,13 +57,85 @@ class PdoMySqlGrammarInsertTest extends TestCase
         );   
     }
     
+    public function testInsertWithReturning()
+    {
+        $grammar = (new PdoMySqlGrammar($this->tables))
+            ->table('products')
+            ->insert([
+                'sku' => 'Sku',
+                'title' => 'Title',
+            ]);
+        
+        $this->assertSame(
+            [
+                'INSERT INTO `products` (`sku`,`title`) VALUES (?, ?) RETURNING `id`,`sku`,`price`,`title`',
+                [
+                    0 => 'Sku',
+                    1 => 'Title',
+                ],
+            ],
+            [
+                $grammar->getStatement(),
+                $grammar->getBindings()
+            ]
+        );   
+    }
+    
+    public function testInsertWithReturningSpecific()
+    {
+        $grammar = (new PdoMySqlGrammar($this->tables))
+            ->table('products')
+            ->insert([
+                'sku' => 'Sku',
+                'title' => 'Title',
+            ], return: ['id']);
+        
+        $this->assertSame(
+            [
+                'INSERT INTO `products` (`sku`,`title`) VALUES (?, ?) RETURNING `id`',
+                [
+                    0 => 'Sku',
+                    1 => 'Title',
+                ],
+            ],
+            [
+                $grammar->getStatement(),
+                $grammar->getBindings()
+            ]
+        );   
+    }
+    
+    public function testInsertWithReturningSpecificReturnOnlyValid()
+    {
+        $grammar = (new PdoMySqlGrammar($this->tables))
+            ->table('products')
+            ->insert([
+                'sku' => 'Sku',
+                'title' => 'Title',
+            ], return: ['id', 'foo']);
+        
+        $this->assertSame(
+            [
+                'INSERT INTO `products` (`sku`,`title`) VALUES (?, ?) RETURNING `id`',
+                [
+                    0 => 'Sku',
+                    1 => 'Title',
+                ],
+            ],
+            [
+                $grammar->getStatement(),
+                $grammar->getBindings()
+            ]
+        );   
+    }    
+    
     public function testInsertWithIgnoresTableAlias()
     {
         $grammar = (new PdoMySqlGrammar($this->tables))
             ->table('products p')
             ->insert([
                 'title' => 'Title',
-            ]);
+            ], return: null);
         
         $this->assertSame(
             [
