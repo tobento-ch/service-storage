@@ -418,7 +418,7 @@ class InMemoryStorage extends Storage
 
             if ($primaryKey && array_key_exists($primaryKey, $firstItem))
             {
-                return $this->where($primaryKey, '=', $firstItem[$primaryKey])->update($item);
+                return $this->where($primaryKey, '=', $firstItem[$primaryKey])->update($item, $return);
             }
 
             foreach($attributes as $column => $value)

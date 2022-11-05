@@ -740,25 +740,27 @@ var_dump($updatedItems->all());
 **updateOrInsert**
 
 ```php
-use Tobento\Service\Storage\ResultInterface;
 use Tobento\Service\Storage\ItemInterface;
+use Tobento\Service\Storage\ItemsInterface;
 
-$result = $storage->table('products')->updateOrInsert(
-    ['id' => 3], // where clauses
-    ['sku' => 'glue', 'price' => 3.48]
+$items = $storage->table('products')->updateOrInsert(
+    ['id' => 2], // where clauses
+    ['sku' => 'glue', 'price' => 3.48],
+    return: ['id']
 );
 
-var_dump($result instanceof ResultInterface);
+// if updated:
+var_dump($items instanceof ItemsInterface);
 // bool(true)
 
-var_dump($result->item() instanceof ItemInterface);
+// if inserted:
+var_dump($items instanceof ItemInterface);
 // bool(true)
-
-var_dump($result->action());
-// string(6) "insert"
 ```
 
 Check out [Item Interface](#item-interface) to learn more about it.
+
+Check out [Items Interface](#items-interface) to learn more about it.
 
 #### Updating JSON Columns
 
