@@ -20,6 +20,8 @@ use Tobento\Service\Storage\Tables\TablesInterface;
 use Tobento\Service\Storage\StorageInterface;
 use Tobento\Service\Storage\StorageException;
 use Tobento\Service\Storage\Grammar\GrammarException;
+use Tobento\Service\Storage\ItemInterface;
+use Tobento\Service\Storage\ItemsInterface;
 
 /**
  * StorageUpdateTest
@@ -176,6 +178,53 @@ abstract class StorageUpdateTest extends TestCase
         $this->assertEquals(
             'update',
             $updatedItems->action()
+        );
+    }
+    
+    public function testUpdateOrInsertMethodItemsGetsUpdated()
+    {
+        $insertedItems = $this->storage->table('products')->insertItems([
+            ['sku' => 'pen', 'price' => 1.55],
+            ['sku' => 'pencil', 'price' => 1.23],
+        ]);
+        
+        $items = $this->storage->table('products')->updateOrInsert(
+            ['id' => 2],
+            ['sku' => 'glue'],
+        );
+        
+        $this->assertInstanceOf(ItemsInterface::class, $items);
+
+        $this->assertEquals(
+            [
+                ['sku' => 'pen'],
+                ['sku' => 'glue'],
+            ],
+            $this->storage->table('products')->select('sku')->get()->all()
+        );
+    }
+    
+    public function testUpdateOrInsertMethodItemGetInsertedIfNotExist()
+    {
+        $insertedItems = $this->storage->table('products')->insertItems([
+            ['sku' => 'pen', 'price' => 1.55],
+            ['sku' => 'pencil', 'price' => 1.23],
+        ]);
+        
+        $items = $this->storage->table('products')->updateOrInsert(
+            ['id' => 3],
+            ['sku' => 'glue'],
+        );
+        
+        $this->assertInstanceOf(ItemInterface::class, $items);
+
+        $this->assertEquals(
+            [
+                ['sku' => 'pen'],
+                ['sku' => 'pencil'],
+                ['sku' => 'glue'],
+            ],
+            $this->storage->table('products')->select('sku')->get()->all()
         );
     }
 }
