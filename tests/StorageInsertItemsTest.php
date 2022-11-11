@@ -110,6 +110,18 @@ abstract class StorageInsertItemsTest extends TestCase
         );
     }
     
+    public function testReturningAllColumnsIfNotSpecified()
+    {
+        $insertedItems = $this->storage->table('products')->insertItems([
+            ['sku' => 'pen', 'price' => 7.5, 'title' => 'Pen'],
+        ]);
+
+        $this->assertEquals(
+            [['id' => 1, 'sku' => 'pen', 'price' => 7.5, 'title' => 'Pen']],
+            $insertedItems->all()
+        );
+    }
+    
     public function testReturningSpecificColumns()
     {
         $insertedItems = $this->storage->table('products')->insertItems([

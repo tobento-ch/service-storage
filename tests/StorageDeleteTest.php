@@ -94,6 +94,25 @@ abstract class StorageDeleteTest extends TestCase
         );
     }
     
+    public function testReturningAllColumnsIfNotSpecified()
+    {
+        $this->storage->table('products')->insert(['sku' => 'foo']);
+        
+        $deletedItems = $this->storage->table('products')->delete();
+        
+        $items = $deletedItems->all();
+        
+        foreach($items as $key => $item) {
+            unset($items[$key]['price']);
+            unset($items[$key]['title']);            
+        }
+        
+        $this->assertEquals(
+            [['id' => 1, 'sku' => 'foo']],
+            $items
+        );
+    }    
+    
     public function testReturningSpecificColumns()
     {
         $this->storage->table('products')->insert(['sku' => 'foo']);

@@ -83,6 +83,22 @@ class StorageUpdateTest extends \Tobento\Service\Storage\Test\StorageUpdateTest
         );
     }
     
+    public function testReturningAllColumnsIfNotSpecified()
+    {
+        $insertedItems = $this->storage->table('products')->insertItems([
+            ['sku' => 'pen'],
+        ]);
+        
+        $updatedItems = $this->storage
+            ->table('products')
+            ->update(['sku' => 'sku new', 'price' => 7.5, 'title' => 'Pen']);        
+
+        $this->assertEquals(
+            [],
+            $updatedItems->all()
+        );
+    }    
+    
     public function testReturningSpecificColumnsIgnoresInvalid()
     {
         $insertedItems = $this->storage->table('products')->insertItems([

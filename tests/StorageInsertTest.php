@@ -20,6 +20,7 @@ use Tobento\Service\Storage\Tables\TablesInterface;
 use Tobento\Service\Storage\StorageInterface;
 use Tobento\Service\Storage\StorageException;
 use Tobento\Service\Storage\Grammar\GrammarException;
+use Tobento\Service\Storage\QueryException;
 
 /**
  * StorageInsertTest
@@ -81,11 +82,11 @@ abstract class StorageInsertTest extends TestCase
         );
     }
 
-    public function testInsertWithEmptyItemsReturnsNull()
+    public function testInsertWithEmptyItemsThrowsQueryException()
     {
-        $insertedItem = $this->storage->table('products')->insert([]);
+        $this->expectException(QueryException::class);
         
-        $this->assertNull($insertedItem);       
+        $this->storage->table('products')->insert([]);
     }
     
     public function testReturningNullReturnsEmptyItem()
@@ -97,6 +98,22 @@ abstract class StorageInsertTest extends TestCase
         $this->assertEquals(
             [],
             $insertedItem->all()
+        );
+    }
+    
+    public function testReturningAllColumnsIfNotSpecified()
+    {
+        $insertedItem = $this->storage->table('products')->insert([
+            'sku' => 'pen',
+        ]);
+        
+        $items = $insertedItem->all();
+        unset($items['price']);
+        unset($items['title']);
+        
+        $this->assertEquals(
+            ['sku' => 'pen', 'id' => 1],
+            $items
         );
     }
     
