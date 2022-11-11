@@ -178,6 +178,11 @@ class StorableTablesGrammar extends Grammar
         $this->item = $item;
         
         if (is_array($this->return)) {
+            
+            if (empty($this->return)) {
+                $this->return = $this->queryTables->getColumnNames();
+            }
+            
             $this->item = array_intersect_key($this->item, array_flip($this->return));
         }
         
