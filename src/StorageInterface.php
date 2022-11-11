@@ -120,16 +120,16 @@ interface StorageInterface
      * Insert an item.
      *
      * @param array $item The item data
-     * @return null|ItemInterface The item on success, otherwise null.
+     * @return ItemInterface The item inserted.
      */    
-    public function insert(array $item): null|ItemInterface;
+    public function insert(array $item): ItemInterface;
     
     /**
      * Insert items.
      *
      * @param iterable $items
      * @param null|array $return The columns to be returned.
-     * @return ItemsInterface
+     * @return ItemsInterface The items inserted.
      */
     public function insertItems(iterable $items, null|array $return = []): ItemsInterface;
     
@@ -148,13 +148,13 @@ interface StorageInterface
      * @param array $attributes The attributes to query.
      * @param array $item The item data
      * @param null|array $return The columns to be returned.
-     * @return null|ItemInterface|ItemsInterface The item(s) on success, otherwise null.
+     * @return ItemInterface|ItemsInterface
      */
     public function updateOrInsert(
         array $attributes,
         array $item,
         null|array $return = []
-    ): null|ItemInterface|ItemsInterface;
+    ): ItemInterface|ItemsInterface;
     
     /**
      * Delete item(s).

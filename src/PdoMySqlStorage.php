@@ -17,6 +17,8 @@ use Tobento\Service\Storage\Tables\TablesInterface;
 use Tobento\Service\Storage\Grammar\GrammarInterface;
 use Tobento\Service\Storage\Grammar\PdoMySqlGrammar;
 use Closure;
+use PDOStatement;
+use Exception;
 use PDO;
 
 /**
@@ -80,8 +82,10 @@ class PdoMySqlStorage extends Storage
             return [];
         }
         
-        $pdoStatement = $this->pdo->prepare('TRUNCATE `'.$table->name().'`');
-        $pdoStatement->execute();
+        $this->execute(
+            statement: 'TRUNCATE `'.$table->name().'`',
+            bindings: []
+        );
 
         return $this->table($table->name())->insertItems($items);
     }
@@ -131,8 +135,10 @@ class PdoMySqlStorage extends Storage
             return null;
         }
         
-        $pdoStatement = $this->pdo->prepare($grammar->getStatement());
-        $pdoStatement->execute($grammar->getBindings());
+        $pdoStatement = $this->execute(
+            statement: $grammar->getStatement(),
+            bindings: $grammar->getBindings()
+        );
         
         $this->clear();
         
@@ -171,8 +177,10 @@ class PdoMySqlStorage extends Storage
             return new Items(action: 'get');
         }
         
-        $pdoStatement = $this->pdo->prepare($grammar->getStatement());
-        $pdoStatement->execute($grammar->getBindings());
+        $pdoStatement = $this->execute(
+            statement: $grammar->getStatement(),
+            bindings: $grammar->getBindings()
+        );
         
         $this->clear();
 
@@ -224,10 +232,14 @@ class PdoMySqlStorage extends Storage
         if ($this->skipQuery) {
             return new Item(action: 'column');
         }
-                
-        $pdoStatement = $this->pdo->prepare($grammar->getStatement());
-        $pdoStatement->execute($grammar->getBindings());
+
+        $pdoStatement = $this->execute(
+            statement: $grammar->getStatement(),
+            bindings: $grammar->getBindings()
+        );        
+
         $this->clear();
+        
         return new Item($pdoStatement->fetchAll($fetchMode), action: 'column');
     }
 
@@ -252,9 +264,11 @@ class PdoMySqlStorage extends Storage
      * @return mixed
      */    
     public function selectRaw(string $statement, array $bindings = [], string $mode = 'all'): mixed
-    { 
-        $pdoStatement = $this->pdo->prepare($statement);
-        $pdoStatement->execute($bindings);
+    {
+        $pdoStatement = $this->execute(
+            statement: $statement,
+            bindings: $bindings
+        );
         
         if ($mode === 'all') {
             return $pdoStatement->fetchAll(PDO::FETCH_ASSOC);
@@ -268,9 +282,9 @@ class PdoMySqlStorage extends Storage
      *
      * @param array $item The item data
      * @param null|array $return The columns to be returned.
-     * @return null|ItemInterface The item on success, otherwise null.
+     * @return ItemInterface The item inserted.
      */    
-    public function insert(array $item, null|array $return = []): null|ItemInterface
+    public function insert(array $item, null|array $return = []): ItemInterface
     {
         $table = $this->table;
         $grammar = (new PdoMySqlGrammar($this->tables()))
@@ -280,24 +294,23 @@ class PdoMySqlStorage extends Storage
         $this->grammar = $grammar;
 
         if ($this->skipQuery) {
-            return null;
+            return new Item(action: 'insert');
         }
         
         $this->clear();
         
-        if ($statement = $grammar->getStatement())
-        {
-            $pdoStatement = $this->pdo->prepare($statement);
-            $pdoStatement->execute($grammar->getBindings());
-            
-            if (str_contains($statement, 'RETURNING')) {
-                return new Item($pdoStatement->fetch(PDO::FETCH_ASSOC), action: 'insert');
-            }
-            
-            return new Item(action: 'insert');
-        }
+        $statement = $grammar->getStatement();
         
-        return null;
+        $pdoStatement = $this->execute(
+            statement: $statement,
+            bindings: $grammar->getBindings()
+        );
+
+        if (str_contains($statement, 'RETURNING')) {
+            return new Item($pdoStatement->fetch(PDO::FETCH_ASSOC), action: 'insert');
+        }
+
+        return new Item(action: 'insert');
     }
     
     /**
@@ -305,7 +318,7 @@ class PdoMySqlStorage extends Storage
      *
      * @param iterable $items
      * @param null|array $return The columns to be returned.
-     * @return ItemsInterface
+     * @return ItemsInterface The items inserted.
      */
     public function insertItems(iterable $items, null|array $return = []): ItemsInterface
     {
@@ -326,8 +339,10 @@ class PdoMySqlStorage extends Storage
 
         if ($statement = $grammar->getStatement())
         {
-            $pdoStatement = $this->pdo->prepare($statement);
-            $pdoStatement->execute($grammar->getBindings());
+            $pdoStatement = $this->execute(
+                statement: $grammar->getStatement(),
+                bindings: $grammar->getBindings()
+            );
 
             if (str_contains($statement, 'RETURNING')) {
                 return new Items($pdoStatement->fetchAll(PDO::FETCH_ASSOC), action: 'insertItems');
@@ -365,8 +380,11 @@ class PdoMySqlStorage extends Storage
         
         if ($statement = $grammar->getStatement())
         {
-            $pdoStatement = $this->pdo->prepare($statement);
-            $pdoStatement->execute($grammar->getBindings());
+            $pdoStatement = $this->execute(
+                statement: $statement,
+                bindings: $grammar->getBindings()
+            );
+
             // Note: returning statements are not supported!
             return new Items(action: 'update', itemsCount: $pdoStatement->rowCount());
         }
@@ -380,13 +398,13 @@ class PdoMySqlStorage extends Storage
      * @param array $attributes The attributes to query.
      * @param array $item The item data
      * @param null|array $return The columns to be returned.
-     * @return null|ItemInterface|ItemsInterface The item(s) on success, otherwise null.
+     * @return ItemInterface|ItemsInterface
      */
     public function updateOrInsert(
         array $attributes,
         array $item,
         null|array $return = []
-    ): null|ItemInterface|ItemsInterface {
+    ): ItemInterface|ItemsInterface {
         
         foreach($attributes as $column => $value) {
             $this->where($column, '=', $value);
@@ -439,8 +457,10 @@ class PdoMySqlStorage extends Storage
         
         if ($statement = $grammar->getStatement())
         {
-            $pdoStatement = $this->pdo->prepare($statement);
-            $pdoStatement->execute($grammar->getBindings());
+            $pdoStatement = $this->execute(
+                statement: $statement,
+                bindings: $grammar->getBindings()
+            );
             
             if (str_contains($statement, 'RETURNING')) {
                 return new Items($pdoStatement->fetchAll(PDO::FETCH_ASSOC), action: 'delete');
@@ -554,5 +574,28 @@ class PdoMySqlStorage extends Storage
         $bindings = $grammar->getBindings();
         
         return [$statement, $bindings];
+    }    
+
+    /**
+     * Execute a statement.
+     *
+     * @param null|string $statement The statement.
+     * @param array $bindings Any bindings for the statement.
+     * @return PDOStatement
+     */
+    protected function execute(null|string $statement, array $bindings = []): PDOStatement
+    {
+        if (is_null($statement)) {
+            throw new QueryException('', $bindings, 'Invalid Statement');
+        }
+        
+        $pdoStatement = $this->pdo->prepare($statement);
+        
+        try {
+            $pdoStatement->execute($bindings);
+            return $pdoStatement;
+        } catch (Exception $e) {
+            throw new QueryException($statement, $bindings, '', 0, $e);
+        }
     }
 }

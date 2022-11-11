@@ -245,11 +245,11 @@ abstract class Storage implements StorageInterface
      * Insert an item.
      *
      * @param array $item The item data
-     * @return null|ItemInterface The item on success, otherwise null.
+     * @return ItemInterface The item inserted.
      */    
-    public function insert(array $item): null|ItemInterface
+    public function insert(array $item): ItemInterface
     {
-        return null;
+        return new Item(action: 'insert');
     }
     
     /**
@@ -257,7 +257,7 @@ abstract class Storage implements StorageInterface
      *
      * @param iterable $items
      * @param null|array $return The columns to be returned.
-     * @return ItemsInterface
+     * @return ItemsInterface The items inserted.
      */
     public function insertItems(iterable $items, null|array $return = []): ItemsInterface
     {
@@ -282,14 +282,14 @@ abstract class Storage implements StorageInterface
      * @param array $attributes The attributes to query.
      * @param array $item The item data
      * @param null|array $return The columns to be returned.
-     * @return null|ItemInterface|ItemsInterface The item(s) on success, otherwise null.
+     * @return ItemInterface|ItemsInterface
      */
     public function updateOrInsert(
         array $attributes,
         array $item,
         null|array $return = []
-    ): null|ItemInterface|ItemsInterface {
-        return null;
+    ): ItemInterface|ItemsInterface {
+        return new Item(action: 'insert');
     }
     
     /**
