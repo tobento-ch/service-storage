@@ -87,6 +87,12 @@ class QueryException extends Exception
             }
         }
         
-        return rtrim(implode('', $phrases), '?');
-    }    
+        $message = rtrim(implode('', $phrases), '?');
+        
+        if (is_null($previous)) {
+            return $message;
+        }
+        
+        return $previous->getMessage().': '.$message;
+    }
 }
