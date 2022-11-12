@@ -292,11 +292,6 @@ class PdoMySqlGrammar extends Grammar
             $columns[] = $column->column();
         }
         
-        // primaryKey cannot be set on update
-        if ($table->primaryKey()) {
-            $columns = array_diff($columns, [$table->primaryKey()]);
-        }
-        
         if (empty($columns)) {
             return null;
         }             
