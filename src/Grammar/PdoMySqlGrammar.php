@@ -567,7 +567,7 @@ class PdoMySqlGrammar extends Grammar
         $this->bind($where['value']);
         
         $column = $this->compileWhereColumn($column);
-
+        
         return $where['boolean'].' '.$column.' '.$operator.' ?';
     }
 
@@ -642,7 +642,7 @@ class PdoMySqlGrammar extends Grammar
         $clause = $where['boolean'].' '.$col.' is null';
         
         if ($column->jsonSegments()) {
-            $clause = '('.$clause.' or '.$col.' = \'NULL\')';
+            $clause = $where['boolean'].' ('.$col.' is null or '.$col.' = \'NULL\')';
         }
 
         return $clause;
