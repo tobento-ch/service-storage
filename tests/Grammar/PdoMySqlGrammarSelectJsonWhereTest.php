@@ -362,6 +362,42 @@ class PdoMySqlGrammarSelectJsonWhereTest extends TestCase
                 $grammar->getBindings()
             ]
         );   
+    }
+    
+    public function testWhereNullMultiple()
+    {
+        $grammar = (new PdoMySqlGrammar($this->tables))
+            ->table('products')
+            ->select()
+            ->wheres([
+                [
+                    'type' => 'Null',
+                    'column' => 'data->color',
+                    'value' => null,
+                    'operator' => '',
+                    'boolean' => 'and',
+                ],
+                [
+                    'type' => 'Null',
+                    'column' => 'data->material',
+                    'value' => null,
+                    'operator' => '',
+                    'boolean' => 'and',
+                ],                
+            ]);
+        
+        $this->assertSame(
+            [
+                'SELECT `id`,`title`,`data` FROM `products` WHERE (json_unquote(json_extract(`data`, \'$."color"\')) is null or json_unquote(json_extract(`data`, \'$."color"\')) = \'NULL\') and (json_unquote(json_extract(`data`, \'$."material"\')) is null or json_unquote(json_extract(`data`, \'$."material"\')) = \'NULL\')',
+                [
+                    //
+                ],
+            ],
+            [
+                $grammar->getStatement(),
+                $grammar->getBindings()
+            ]
+        );   
     }    
     
     public function testWhereNotNull()

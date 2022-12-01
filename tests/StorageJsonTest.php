@@ -162,6 +162,20 @@ abstract class StorageJsonTest extends TestCase
         );       
     }
     
+    public function testWhereNullMultipleGetMethod()
+    {
+        $items = $this->storage->table('products')
+            ->index('id')
+            ->whereNull('data->color')
+            ->whereNull('data->material')
+            ->get();
+        
+        $this->assertEquals(
+            [1 => $this->products[1], 2 => $this->products[2], 4 => $this->products[4]],
+            $items->all()
+        );       
+    }    
+    
     public function testWhereNotNullGetMethod()
     {
         $items = $this->storage->table('products')
