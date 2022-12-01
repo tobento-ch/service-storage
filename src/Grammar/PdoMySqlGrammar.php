@@ -585,7 +585,7 @@ class PdoMySqlGrammar extends Grammar
         
         if ($where['value'] instanceof SubQueryWhere) {
             return $this->compileWhereSubquery($where['value'], $where);
-        }     
+        }
         
         if (!is_string($where['column'])) {
             return null;
@@ -697,7 +697,7 @@ class PdoMySqlGrammar extends Grammar
 
         if ($where['value'] instanceof SubQueryWhere) {
             return $this->compileWhereSubquery($where['value'], $where);
-        }    
+        }
 
         if (!is_string($where['column'])) {
             return null;
@@ -736,6 +736,14 @@ class PdoMySqlGrammar extends Grammar
      */    
     protected function whereBetween(array $where): null|string
     {
+        if ($where['column'] instanceof SubQueryWhere) {
+            return $this->compileWhereNested($where['column'], $where);
+        }
+
+        if ($where['value'] instanceof SubQueryWhere) {
+            return $this->compileWhereSubquery($where['value'], $where);
+        }
+        
         if (!is_string($where['column'])) {
             return null;
         }    
