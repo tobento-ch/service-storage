@@ -677,7 +677,7 @@ class PdoMySqlGrammar extends Grammar
         $clause = $where['boolean'].' '.$col.' is not null';
         
         if ($column->jsonSegments()) {
-            $clause = '('.$clause.' AND '.$col.' != \'NULL\')';
+            $clause = $where['boolean'].' ('.$col.' AND '.$col.' != \'NULL\')';
         }
         
         return $clause;
