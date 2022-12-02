@@ -1040,10 +1040,15 @@ class StorableTablesGrammar extends Grammar
 
                 try {
                     $itemValue = json_decode($itemValue, true, 512, JSON_THROW_ON_ERROR);
+                    
+                    if (! Arr::has($itemValue, $path)) {
+                        return false;
+                    }
+                    
                     $itemValue = Arr::get($itemValue, $path);
                     
                     if (is_null($itemValue)) {
-                        return false;
+                        return $not ? true : false;
                     }
                 } catch (JsonException|Throwable $e) {
                     return false;
