@@ -592,7 +592,21 @@ class PdoMySqlStorage extends Storage
         $pdoStatement = $this->pdo->prepare($statement);
         
         try {
-            $pdoStatement->execute($bindings);
+            
+            foreach ($bindings as $key => $value) {
+                $pdoStatement->bindValue(
+                    is_string($key) ? $key : $key + 1,
+                    $value,
+                    match (true) {
+                        is_int($value) => PDO::PARAM_INT,
+                        is_resource($value) => PDO::PARAM_LOB,
+                        default => PDO::PARAM_STR
+                    },
+                );
+            }
+            
+            $pdoStatement->execute();
+            
             return $pdoStatement;
         } catch (Exception $e) {
             throw new QueryException($statement, $bindings, '', 0, $e);
