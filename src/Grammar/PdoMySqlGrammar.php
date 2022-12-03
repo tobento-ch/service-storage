@@ -791,6 +791,10 @@ class PdoMySqlGrammar extends Grammar
      */
     protected function whereJsonContains(array $where): null|string
     {
+        if ($where['column'] instanceof SubQueryWhere) {
+            return $this->compileWhereNested($where['column'], $where);
+        }
+        
         if (!is_string($where['column'])) {
             return null;
         }    
@@ -832,6 +836,10 @@ class PdoMySqlGrammar extends Grammar
      */
     protected function whereJsonContainsKey(array $where): null|string
     {
+        if ($where['column'] instanceof SubQueryWhere) {
+            return $this->compileWhereNested($where['column'], $where);
+        }
+        
         if (!is_string($where['column'])) {
             return null;
         }    
@@ -865,6 +873,10 @@ class PdoMySqlGrammar extends Grammar
      */
     protected function whereJsonLength(array $where): null|string
     {
+        if ($where['column'] instanceof SubQueryWhere) {
+            return $this->compileWhereNested($where['column'], $where);
+        }
+        
         if (!is_string($where['column'])) {
             return null;
         }    

@@ -1318,6 +1318,10 @@ class StorableTablesGrammar extends Grammar
      */
     protected function whereJsonContains(array $items, array $where): array
     {
+        if ($where['column'] instanceof SubQueryWhere) {
+            return $this->applyWhereNested($items, $where['column'], $where);
+        }
+        
         if (!is_string($where['column'])) {
             return [];
         }    
@@ -1390,6 +1394,10 @@ class StorableTablesGrammar extends Grammar
      */
     protected function whereJsonContainsKey(array $items, array $where): array
     {
+        if ($where['column'] instanceof SubQueryWhere) {
+            return $this->applyWhereNested($items, $where['column'], $where);
+        }
+        
         if (!is_string($where['column'])) {
             return [];
         }    
@@ -1448,6 +1456,10 @@ class StorableTablesGrammar extends Grammar
      */
     protected function whereJsonLength(array $items, array $where): array
     {
+        if ($where['column'] instanceof SubQueryWhere) {
+            return $this->applyWhereNested($items, $where['column'], $where);
+        }
+        
         if (!is_string($where['column'])) {
             return [];
         }    
