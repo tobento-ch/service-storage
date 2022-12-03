@@ -396,7 +396,7 @@ $products = $storage->table('products')
     ->get();
 ```
 
-**whereColumn**
+**whereColumn / orWhereColumn**
 
 ```php
 $users = $storage->table('users')
@@ -408,7 +408,7 @@ Supported operators: =, !=, >, <, >=, <=, <>, <=>
 
 #### JSON Where Clauses
 
-**whereJsonContains**
+**whereJsonContains / orWhereJsonContains**
 
 ```php
 $products = $storage->table('products')
@@ -420,7 +420,15 @@ $products = $storage->table('products')
     ->get();
 ```
 
-**whereJsonLength**
+**whereJsonContainsKey / orWhereJsonContainsKey**
+
+```php
+$products = $storage->table('products')
+    ->whereJsonContainsKey('options->color')
+    ->get();
+```
+
+**whereJsonLength / orWhereJsonLength**
 
 ```php
 $products = $storage->table('products')
