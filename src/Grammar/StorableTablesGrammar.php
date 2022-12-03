@@ -1258,16 +1258,16 @@ class StorableTablesGrammar extends Grammar
 
         if ($where['value'] instanceof SubQueryWhere) {
             return $this->applyWhereSubquery($items, $where['value'], $where);
-        }    
-
-        if (!is_string($where['column'])) {
-            return $items;
-        }    
+        }
         
-        if (is_null($column = $this->queryTables->verifyColumn($where['column']))) {
+        if (!is_string($where['column'])) {
             return $items;
         }
 
+        if (is_null($column = $this->queryTables->verifyColumn($where['column']))) {
+            return $items;
+        }
+        
         if (!in_array($where['operator'], ['IN', 'NOT IN'])) {
             return $items;
         }
@@ -1281,7 +1281,7 @@ class StorableTablesGrammar extends Grammar
         
         return array_filter($items, function($item) use ($column, $values, $operator) {            
             $columnOrg = $column;
-            
+                        
             if ($column->jsonSegments()) {
                 $column = $column->withJsonSegments(null);
             }
@@ -1294,14 +1294,14 @@ class StorableTablesGrammar extends Grammar
             
             if ($columnOrg->jsonSegments()) {
                 $path = implode('.', $columnOrg->jsonSegments());
-
+                
                 try {
                     $itemValue = json_decode($itemValue, true, 512, JSON_THROW_ON_ERROR);
-                    $itemValue = Arr::get($itemValue, $path);
+                    $itemValue = Arr::get($itemValue, $path);                        
                 } catch (JsonException|Throwable $e) {
                     return false;
                 }
-            }            
+            }
             
             $exists = in_array($itemValue, $values);
             
