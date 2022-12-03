@@ -218,29 +218,39 @@ class InMemoryStorage extends Storage
             
             if ($columnKey && $columnKey->jsonSegments()) {
                 $keyPath = implode('.', $columnKey->jsonSegments());   
-            }            
+            }
             
             foreach($items as $i => $item) {
                 foreach($item as $k => $value) {
-                    try {
-                        if ($columnPath && is_string($value) && $column->name() === $k) {
-                            $value = json_decode($value, true, 512, JSON_THROW_ON_ERROR);
+                    
+                    if ($columnPath && $column->name() === $k) {
+                        if (is_string($value)) {
+                            try {
+                                $value = json_decode($value, true, 512, JSON_THROW_ON_ERROR);
+                                $items[$i][$k] = Arr::get($value, $columnPath);
+                                $value = json_encode($value, JSON_THROW_ON_ERROR);
+                            } catch (JsonException $e) {
+                                $items[$i][$k] = is_scalar($value) ? $value : '';
+                            }
+                        } elseif (is_array($value)) {
                             $items[$i][$k] = Arr::get($value, $columnPath);
-                            $value = json_encode($value, JSON_THROW_ON_ERROR);
                         }
-                    } catch (JsonException $e) {
-                        $items[$i][$k] = is_scalar($value) ? $value : '';
                     }
-                    try {
-                        if ($keyPath && is_string($value) && $columnKey?->name() === $k) {
-                            $value = json_decode($value, true, 512, JSON_THROW_ON_ERROR);
+
+                    if ($keyPath && $columnKey?->name() === $k) {
+                        if (is_string($value)) {
+                            try {
+                                $value = json_decode($value, true, 512, JSON_THROW_ON_ERROR);
+                            } catch (JsonException $e) {
+                                $items[$i][$columnKey?->column()] = is_scalar($value) ? $value : '';
+                            }
+                        }
+                        if (is_array($value)) {
                             $keyVal = Arr::get($value, $keyPath);
                             $keyVal = is_scalar($keyVal) ? (string)$keyVal : 'null';
-                            $items[$i][$columnKey?->column()] = $keyVal;
+                            $items[$i][$columnKey?->name()] = $keyVal;
                         }
-                    } catch (JsonException $e) {
-                        $items[$i][$columnKey?->column()] = is_scalar($value) ? $value : '';
-                    }                    
+                    }
                 }
             }
         }
