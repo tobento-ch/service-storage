@@ -1281,7 +1281,7 @@ class PdoMySqlGrammar extends Grammar
      */    
     protected function bind(mixed $value): void
     {
-        $this->bindings[] = is_array($value) ? json_encode($value) : $value;
+        $this->bindings[] = is_array($value) ? json_encode($value, JSON_UNESCAPED_UNICODE) : $value;
     }
 
     /**

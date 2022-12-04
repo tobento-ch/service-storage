@@ -191,7 +191,7 @@ class StorableTablesGrammar extends Grammar
         }
         
         foreach($item as $key => $value) {
-            $item[$key] = is_array($value) ? json_encode($value) : $value;
+            $item[$key] = is_array($value) ? json_encode($value, JSON_UNESCAPED_UNICODE) : $value;
         }
         
         $items[] = $item;
@@ -259,7 +259,7 @@ class StorableTablesGrammar extends Grammar
             }
             
             foreach($item as $key => $value) {
-                $item[$key] = is_array($value) ? json_encode($value) : $value;
+                $item[$key] = is_array($value) ? json_encode($value, JSON_UNESCAPED_UNICODE) : $value;
             }
             
             $items[] = $item;
@@ -349,7 +349,7 @@ class StorableTablesGrammar extends Grammar
         }
         
         foreach($item as $key => $value) {
-            $item[$key] = is_array($value) ? json_encode($value) : $value;
+            $item[$key] = is_array($value) ? json_encode($value, JSON_UNESCAPED_UNICODE) : $value;
         }        
         
         // update all items found with the item.
@@ -416,7 +416,7 @@ class StorableTablesGrammar extends Grammar
             }
             
             try {
-                $item[$colNrm->column()] = json_encode($columnValue, JSON_THROW_ON_ERROR);
+                $item[$colNrm->column()] = json_encode($columnValue, JSON_UNESCAPED_UNICODE|JSON_THROW_ON_ERROR);
             } catch (JsonException|Throwable $e) {
                 //
             }
