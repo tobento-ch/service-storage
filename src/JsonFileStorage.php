@@ -83,7 +83,7 @@ class JsonFileStorage extends InMemoryStorage
         }        
         
         $fileCreator = new FileCreator();
-        $fileCreator->content(json_encode(Iter::toArray(iterable: $items)))
+        $fileCreator->content(json_encode(Iter::toArray(iterable: $items), JSON_UNESCAPED_UNICODE))
                     ->create(
                         $this->dir.$table->name().'.json',
                         $fileCreator::CONTENT_NEW,

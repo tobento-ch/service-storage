@@ -393,7 +393,7 @@ abstract class Grammar implements GrammarInterface
     protected function encodeJsonValue(mixed $value): null|string
     {
         try {
-            return json_encode($value, JSON_THROW_ON_ERROR);
+            return json_encode($value, JSON_UNESCAPED_UNICODE|JSON_THROW_ON_ERROR);
         } catch (JsonException $e) {
             return null;
         }
