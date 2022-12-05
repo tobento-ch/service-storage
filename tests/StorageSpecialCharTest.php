@@ -103,4 +103,27 @@ abstract class StorageSpecialCharTest extends TestCase
             $this->storage->table('products')->where('data->color', '=', 'rot')->count()
         );
     }
+    
+    public function testWhereJsonContains()
+    {
+        $insertedItem = $this->storage->table('products')->insert([
+            'title' => 'Color Grün',
+            'data' => ['color' => ['grün']],
+        ]);
+        
+        $insertedItem = $this->storage->table('products')->insert([
+            'title' => 'Color Rot',
+            'data' => ['color' => ['rot']],
+        ]);
+        
+        $this->assertEquals(
+            1,
+            $this->storage->table('products')->whereJsonContains('data->color', 'grün')->get()->count()
+        );
+        
+        $this->assertEquals(
+            1,
+            $this->storage->table('products')->whereJsonContains('data->color', 'rot')->count()
+        );
+    }
 }
