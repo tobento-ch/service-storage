@@ -29,7 +29,7 @@
 
     <php>
         <env name="TEST_TOBENTO_STORAGE_PDO_MYSQL" value="false" />
-        <env name="TEST_TOBENTO_STORAGE_PDO_MYSQL_DSN" value="mysql:host=localhost;dbname=tobento_storage_test" />
+        <env name="TEST_TOBENTO_STORAGE_PDO_MYSQL_DSN" value="mysql:host=localhost;dbname=tobento_storage_test;charset=utf8mb4" />
         <env name="TEST_TOBENTO_STORAGE_PDO_MYSQL_USERNAME" value="root" />
         <env name="TEST_TOBENTO_STORAGE_PDO_MYSQL_PASSWORD" value="" />
     </php>
