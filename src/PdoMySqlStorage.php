@@ -301,7 +301,7 @@ class PdoMySqlStorage extends Storage
         
         $statement = $grammar->getStatement();
         
-        $pdoStatement = $this->execute(
+        $this->execute(
             statement: $statement,
             bindings: $grammar->getBindings()
         );
@@ -349,7 +349,7 @@ class PdoMySqlStorage extends Storage
             ->table($table)
             ->insertItems($items, $return);
 
-        if ($statement = $grammar->getStatement())
+        if ($grammar->getStatement())
         {
             $pdoStatement = $this->execute(
                 statement: $grammar->getStatement(),
