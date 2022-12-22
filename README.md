@@ -10,9 +10,11 @@ The Storage Service comes with a query builder for storing and fetching items.
 	- [Simple Example](#simple-example)
 - [Documentation](#documentation)
     - [Storages](#storages)
+        - [Pdo MariaDb Storage](#pdo-mariadb-storage)
         - [Pdo MySql Storage](#pdo-mysql-storage)
         - [Json File Storage](#json-file-storage)
         - [In Memory Storage](#in-memory-storage)
+        - [Storage Comparison](#storage-comparison)
     - [Queries](#queries)
         - [Select Statements](#select-statements)
             - [Retrieving Methods](#retrieving-methods)
@@ -56,6 +58,7 @@ composer require tobento/service-storage
 - Framework-agnostic, will work with any project
 - Decoupled design
 - Query Builder
+- PDO MariaDb Storage
 - PDO MySql Storage
 - Json File Storage
 - In Memory Storage
@@ -94,6 +97,38 @@ var_dump($item instanceof ItemInterface);
 # Documentation
 
 ## Storages
+
+### Pdo MariaDb Storage
+
+```php
+use Tobento\Service\Database\PdoDatabaseFactory;
+use Tobento\Service\Storage\Tables\Tables;
+use Tobento\Service\Storage\PdoMariaDbStorage;
+use Tobento\Service\Storage\StorageInterface;
+use PDO;
+
+$pdo = (new PdoDatabaseFactory())->createPdo(
+    name: 'mysql',
+    config: [
+        'dsn' => 'mysql:host=localhost;dbname=db_name',
+        'username' => 'root',
+        'password' => '',
+        'options' => [
+            PDO::ATTR_ERRMODE => PDO::ERRMODE_EXCEPTION,
+            PDO::ATTR_EMULATE_PREPARES => false,
+        ],
+    ],
+);
+
+$tables = new Tables();
+$tables->add('products', ['id', 'sku', 'price'], 'id');
+$tables->add('users', ['id', 'firstname', 'lastname', 'email'], 'id');
+
+$storage = new PdoMariaDbStorage($pdo, $tables);
+
+var_dump($storage instanceof StorageInterface);
+// bool(true)
+```
 
 ### Pdo MySql Storage
 
@@ -179,6 +214,17 @@ var_dump($storage instanceof StorageInterface);
 // bool(true)
 ```
 
+### Storage Comparison
+
+Return items columns support:
+
+| Storage | insert() | insertMany() | update() | delete() |
+| --- | --- | --- | --- | --- |
+| [Pdo MariaDb Storage](#pdo-mariadb-storage) | yes | yes | no | yes |
+| [Pdo MySql Storage](#pdo-mysql-storage) | yes | no | no | no |
+| [Json File Storage](#json-file-storage) | yes | yes | yes | yes |
+| [In Memory Storage](#in-memory-storage) | yes | yes | yes | yes |
+        
 ## Queries
 
 ### Select Statements
