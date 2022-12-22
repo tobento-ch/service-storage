@@ -15,7 +15,6 @@ namespace Tobento\Service\Storage;
 
 use Tobento\Service\Storage\Tables\TablesInterface;
 use Tobento\Service\Storage\Grammar\GrammarInterface;
-use Tobento\Service\Storage\Grammar\PdoMySqlGrammar;
 use Tobento\Service\Storage\Grammar\PdoMariaDbGrammar;
 use Closure;
 use PDOStatement;
@@ -25,10 +24,20 @@ use PDO;
 /**
  * PdoMariaDbStorage
  */
-class PdoMariaDbStorage extends PdoMySqlStorage
+class PdoMariaDbStorage extends Storage
 {
     /**
-     * Create a new PdoMySqlStorage.
+     * @var int
+     */
+    protected int $transactionLevel = 0;
+    
+    /**
+     * @var int
+     */
+    protected null|array $chunk = null;
+    
+    /**
+     * Create a new PdoMariaDbStorage.
      *
      * @param PDO $pdo
      * @param null|TablesInterface $tables
@@ -42,7 +51,7 @@ class PdoMariaDbStorage extends PdoMySqlStorage
             throw new StorageException('PdoMariaDbStorage only supports mysql driver');
         }
         
-        parent::__construct($pdo, $tables);
+        parent::__construct($tables);
     }
 
     /**
@@ -109,7 +118,7 @@ class PdoMariaDbStorage extends PdoMySqlStorage
      */
     public function first(): null|ItemInterface
     {
-        $grammar = (new PdoMySqlGrammar($this->tables()))
+        $grammar = (new PdoMariaDbGrammar($this->tables()))
             ->select($this->select)
             ->table($this->table ?? '')
             ->joins($this->joins)
@@ -144,7 +153,7 @@ class PdoMariaDbStorage extends PdoMySqlStorage
      */
     public function get(): ItemsInterface
     {
-        $grammar = (new PdoMySqlGrammar($this->tables()))
+        $grammar = (new PdoMariaDbGrammar($this->tables()))
             ->select($this->select)
             ->table($this->table ?? '')
             ->joins($this->joins)
@@ -207,7 +216,7 @@ class PdoMariaDbStorage extends PdoMySqlStorage
             $fetchMode = PDO::FETCH_KEY_PAIR;
         }
         
-        $grammar = (new PdoMySqlGrammar($this->tables()))
+        $grammar = (new PdoMariaDbGrammar($this->tables()))
             ->select($this->select)
             ->table($this->table ?? '')
             ->joins($this->joins)
@@ -278,7 +287,7 @@ class PdoMariaDbStorage extends PdoMySqlStorage
     public function insert(array $item, null|array $return = []): ItemInterface
     {
         $table = $this->table;
-        $grammar = (new PdoMySqlGrammar($this->tables()))
+        $grammar = (new PdoMariaDbGrammar($this->tables()))
             ->table($table)
             ->insert($item, $return);
         
@@ -316,7 +325,7 @@ class PdoMariaDbStorage extends PdoMySqlStorage
         $table = $this->table;
         
         if ($this->skipQuery) {
-            $this->grammar = (new PdoMySqlGrammar($this->tables()))
+            $this->grammar = (new PdoMariaDbGrammar($this->tables()))
                 ->table($table)
                 ->insertItems($items, $return);
             return new Items(action: 'insertItems');
@@ -324,7 +333,7 @@ class PdoMariaDbStorage extends PdoMySqlStorage
 
         $this->clear();
         
-        $grammar = (new PdoMySqlGrammar($this->tables()))
+        $grammar = (new PdoMariaDbGrammar($this->tables()))
             ->table($table)
             ->insertItems($items, $return);
 
@@ -431,7 +440,7 @@ class PdoMariaDbStorage extends PdoMySqlStorage
      */
     public function delete(null|array $return = []): ItemsInterface
     {
-        $grammar = (new PdoMySqlGrammar($this->tables()))
+        $grammar = (new PdoMariaDbGrammar($this->tables()))
             ->table($this->table ?? '')
             ->wheres($this->wheres)
             ->orders($this->orders)
@@ -549,7 +558,7 @@ class PdoMariaDbStorage extends PdoMySqlStorage
             return [$statement, $bindings];    
         }
         
-        $grammar = (new PdoMySqlGrammar($this->tables()))
+        $grammar = (new PdoMariaDbGrammar($this->tables()))
             ->select($this->select)
             ->table($this->table ?? '')
             ->joins($this->joins)
