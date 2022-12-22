@@ -65,5 +65,5 @@ class StorageInsertTest extends \Tobento\Service\Storage\Test\StorageInsertTest
         $processor = new PdoMySqlProcessor();
         
         $processor->process($table, $this->database);
-    }
+    } 
 }

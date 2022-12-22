@@ -66,4 +66,40 @@ class StorageInsertItemsTest extends \Tobento\Service\Storage\Test\StorageInsert
         
         $processor->process($table, $this->database);
     }
+    
+    public function testReturningAllColumnsIfNotSpecified()
+    {
+        $insertedItems = $this->storage->table('products')->insertItems([
+            ['sku' => 'pen', 'price' => 7.5, 'title' => 'Pen'],
+        ]);
+
+        $this->assertEquals(
+            [],
+            $insertedItems->all()
+        );
+    }
+    
+    public function testReturningSpecificColumns()
+    {
+        $insertedItems = $this->storage->table('products')->insertItems([
+            ['sku' => 'pen'],
+        ], return: ['id']);
+
+        $this->assertEquals(
+            [],
+            $insertedItems->all()
+        );
+    }
+    
+    public function testReturningSpecificColumnsIgnoresInvalid()
+    {
+        $insertedItems = $this->storage->table('products')->insertItems([
+            ['sku' => 'pen'],
+        ], return: ['sku', 'unknown']);
+
+        $this->assertEquals(
+            [],
+            $insertedItems->all()
+        );
+    }    
 }

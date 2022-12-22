@@ -111,7 +111,7 @@ abstract class StorageDeleteTest extends TestCase
             [['id' => 1, 'sku' => 'foo']],
             $items
         );
-    }    
+    }
     
     public function testReturningSpecificColumns()
     {

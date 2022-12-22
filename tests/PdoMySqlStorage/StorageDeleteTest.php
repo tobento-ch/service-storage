@@ -66,4 +66,47 @@ class StorageDeleteTest extends \Tobento\Service\Storage\Test\StorageDeleteTest
         
         $processor->process($table, $this->database);
     }
+    
+    public function testReturningAllColumnsIfNotSpecified()
+    {
+        $this->storage->table('products')->insert(['sku' => 'foo']);
+        
+        $deletedItems = $this->storage->table('products')->delete();
+        
+        $items = $deletedItems->all();
+        
+        foreach($items as $key => $item) {
+            unset($items[$key]['price']);
+            unset($items[$key]['title']);            
+        }
+        
+        $this->assertEquals(
+            [],
+            $items
+        );
+    }
+    
+    public function testReturningSpecificColumns()
+    {
+        $this->storage->table('products')->insert(['sku' => 'foo']);
+        
+        $deletedItems = $this->storage->table('products')->delete(return: ['id']);
+
+        $this->assertEquals(
+            [],
+            $deletedItems->all()
+        );
+    }
+    
+    public function testReturningSpecificColumnsIgnoresInvalid()
+    {
+        $this->storage->table('products')->insert(['sku' => 'foo']);
+        
+        $deletedItems = $this->storage->table('products')->delete(return: ['id', 'unknown']);
+
+        $this->assertEquals(
+            [],
+            $deletedItems->all()
+        );
+    }    
 }

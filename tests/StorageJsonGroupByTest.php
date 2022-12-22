@@ -51,12 +51,12 @@ abstract class StorageJsonGroupByTest extends TestCase
         ];
         
         $this->productsLg = [
-            ['product_id' => 1, 'language_id' => 1, 'title' => 'Papier', 'description' => '180mg Papier', 'options' => ''],
+            ['product_id' => 1, 'language_id' => 1, 'title' => 'Papier', 'description' => '180mg Papier', 'options' => null],
             ['product_id' => 1, 'language_id' => 2, 'title' => 'Paper', 'description' => '180mg paper', 'options' => '{"price":2.5}'],
-            ['product_id' => 2, 'language_id' => 1, 'title' => 'Stift', 'description' => 'Wasserfester Stift', 'options' => ''],
-            ['product_id' => 2, 'language_id' => 2, 'title' => 'Pen', 'description' => '', 'options' => ''],
+            ['product_id' => 2, 'language_id' => 1, 'title' => 'Stift', 'description' => 'Wasserfester Stift', 'options' => null],
+            ['product_id' => 2, 'language_id' => 2, 'title' => 'Pen', 'description' => '', 'options' => null],
             ['product_id' => 3, 'language_id' => 1, 'title' => 'Leim', 'description' => '', 'options' => '{"price":8.3}'],
-            ['product_id' => 3, 'language_id' => 2, 'title' => 'Glue', 'description' => '', 'options' => ''],
+            ['product_id' => 3, 'language_id' => 2, 'title' => 'Glue', 'description' => '', 'options' => null],
         ];
         
         $tableProducts = new Table(name: 'products');

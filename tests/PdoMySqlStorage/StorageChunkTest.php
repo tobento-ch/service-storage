@@ -66,4 +66,26 @@ class StorageChunkTest extends \Tobento\Service\Storage\Test\StorageChunkTest
         
         $processor->process($table, $this->database);
     }
+    
+    public function testInsertItemsMethod()
+    {
+        $insertedItems = $this->storage
+            ->table('products')
+            ->chunk(length: 10000)
+            ->insertItems([
+                ['sku' => 'pen', 'title' => 'Pen'],
+                ['sku' => 'pencil', 'title' => 'Pencil'],
+            ], return: ['id', 'sku']);
+        
+        $items = [];
+        
+        foreach($insertedItems as $key => $item) {
+            $items[$key] = $item;
+        }
+        
+        $this->assertEquals(
+            [],
+            $items
+        );
+    }    
 }

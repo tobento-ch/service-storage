@@ -70,4 +70,31 @@ class StorageMiscTest extends \Tobento\Service\Storage\Test\StorageMiscTest
         
         $processor->process($table, $this->database);
     }
+    
+    public function testStoreItemsMethod()
+    {
+        $storeData = [
+            ['id' => 1, 'sku' => 'foo', 'price' => '3.00', 'title' => ''],
+            ['id' => 2, 'sku' => 'bar', 'price' => '5.56', 'title' => ''],
+        ];
+        
+        $items = $this->storage->storeItems('products', $storeData);
+        $items = is_array($items) ? $items : iterator_to_array($items);
+        
+        $this->assertEquals(
+            [],
+            $items
+        );
+        
+        $fetchedItems = $this->storage->fetchItems('products');
+        $fetchedItems = is_array($fetchedItems) ? $items : iterator_to_array($fetchedItems);
+        
+        $this->assertEquals(
+            array_values($fetchedItems),
+            [
+                ['id' => 1, 'sku' => 'foo', 'price' => '3.00', 'title' => ''],
+                ['id' => 2, 'sku' => 'bar', 'price' => '5.56', 'title' => ''],
+            ]
+        );        
+    }    
 }

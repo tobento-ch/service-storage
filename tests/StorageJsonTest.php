@@ -51,12 +51,12 @@ abstract class StorageJsonTest extends TestCase
         ];
                 
         $this->productsLg = [
-            ['product_id' => 1, 'language_id' => 1, 'title' => 'Papier', 'description' => '180mg Papier', 'options' => ''],
-            ['product_id' => 1, 'language_id' => 2, 'title' => 'Paper', 'description' => '180mg paper', 'options' => ''],
-            ['product_id' => 2, 'language_id' => 1, 'title' => 'Stift', 'description' => 'Wasserfester Stift', 'options' => ''],
+            ['product_id' => 1, 'language_id' => 1, 'title' => 'Papier', 'description' => '180mg Papier', 'options' => null],
+            ['product_id' => 1, 'language_id' => 2, 'title' => 'Paper', 'description' => '180mg paper', 'options' => null],
+            ['product_id' => 2, 'language_id' => 1, 'title' => 'Stift', 'description' => 'Wasserfester Stift', 'options' => null],
             ['product_id' => 2, 'language_id' => 2, 'title' => 'Pen', 'description' => '', 'options' => '{"color":"blue","colors":["blue","red"],"foo": null,"options":{"language":"en"}}'],
-            ['product_id' => 3, 'language_id' => 1, 'title' => 'Leim', 'description' => '', 'options' => ''],
-            ['product_id' => 3, 'language_id' => 2, 'title' => 'Glue', 'description' => '', 'options' => ''],
+            ['product_id' => 3, 'language_id' => 1, 'title' => 'Leim', 'description' => '', 'options' => null],
+            ['product_id' => 3, 'language_id' => 2, 'title' => 'Glue', 'description' => '', 'options' => null],
         ];        
         
         $tableProducts = new Table(name: 'products');
@@ -64,7 +64,7 @@ abstract class StorageJsonTest extends TestCase
         $tableProducts->string('sku', 100)->nullable(false)->default('');
         $tableProducts->decimal('price', 15, 2);
         $tableProducts->string('title')->nullable(false)->default('');
-        $tableProducts->json('data')->nullable(false)->default('');
+        $tableProducts->json('data')->nullable(true)->default(null);
         $tableProducts->items($this->products);
         $this->tableProducts = $tableProducts;
         

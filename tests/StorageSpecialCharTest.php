@@ -41,7 +41,7 @@ abstract class StorageSpecialCharTest extends TestCase
         $tableProducts = new Table(name: 'products');
         $tableProducts->bigPrimary('id');
         $tableProducts->string('title')->nullable(false)->default('');
-        $tableProducts->json('data')->nullable(false)->default('');
+        $tableProducts->json('data')->nullable(true)->default(null);
         $tableProducts->items($this->products);
         $this->tableProducts = $tableProducts;
     }

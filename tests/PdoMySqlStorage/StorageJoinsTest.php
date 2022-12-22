@@ -70,4 +70,27 @@ class StorageJoinsTest extends \Tobento\Service\Storage\Test\StorageJoinsTest
         
         $processor->process($table, $this->database);
     }
+    
+    public function testLeftJoinLimitGetMethod()
+    {        
+        $items = $this->storage->table('products p')
+                               ->leftJoin('products_lg pl', 'id', '=', 'product_id')
+                               ->limit(1)
+                               ->get();
+        
+        $this->assertEquals(
+            [
+                0 => [
+                    'id' => 1,
+                    'sku' => 'paper',
+                    'price' => 12,
+                    'product_id' => 1,
+                    'language_id' => 2,
+                    'title' => 'Paper',
+                    'description' => '180mg paper',
+                ]
+            ],
+            $items->all()
+        );        
+    }    
 }

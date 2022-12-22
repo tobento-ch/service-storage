@@ -122,5 +122,5 @@ abstract class StorageMiscTest extends TestCase
             array_values($fetchedItems),
             array_values($items)
         );        
-    }    
+    }
 }
