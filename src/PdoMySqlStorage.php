@@ -305,12 +305,24 @@ class PdoMySqlStorage extends Storage
             statement: $statement,
             bindings: $grammar->getBindings()
         );
+        
+        $item = $grammar->getItem();
+        $primaryKey = $this->tables()->getPrimaryKey($table);
 
-        if (str_contains($statement, 'RETURNING')) {
-            return new Item($pdoStatement->fetch(PDO::FETCH_ASSOC), action: 'insert');
+        if (
+            $primaryKey
+            && is_array($return)
+            && (in_array($primaryKey, $return) || empty($return))
+        ) {
+            $item[$primaryKey] = $item[$primaryKey] ?? (int) $this->pdo->lastInsertId();
         }
+        
+        // might be supported in future version.
+        /*if (str_contains($statement, 'RETURNING')) {
+            return new Item($pdoStatement->fetch(PDO::FETCH_ASSOC), action: 'insert');
+        }*/
 
-        return new Item(action: 'insert');
+        return new Item($item, action: 'insert');
     }
     
     /**
@@ -343,10 +355,11 @@ class PdoMySqlStorage extends Storage
                 statement: $grammar->getStatement(),
                 bindings: $grammar->getBindings()
             );
-
-            if (str_contains($statement, 'RETURNING')) {
+            
+            // might be supported in future version.
+            /*if (str_contains($statement, 'RETURNING')) {
                 return new Items($pdoStatement->fetchAll(PDO::FETCH_ASSOC), action: 'insertItems');
-            }
+            }*/
             
             return new Items(action: 'insertItems', itemsCount: $pdoStatement->rowCount());
         }
@@ -462,9 +475,10 @@ class PdoMySqlStorage extends Storage
                 bindings: $grammar->getBindings()
             );
             
-            if (str_contains($statement, 'RETURNING')) {
+            // might be supported in future version.
+            /*if (str_contains($statement, 'RETURNING')) {
                 return new Items($pdoStatement->fetchAll(PDO::FETCH_ASSOC), action: 'delete');
-            }
+            }*/
             
             return new Items(action: 'delete', itemsCount: $pdoStatement->rowCount());
         }
