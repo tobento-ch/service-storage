@@ -27,7 +27,7 @@ use Tobento\Service\Collection\Arr;
 /**
  * PdoMariaDbGrammar
  */
-class PdoMariaDbGrammar extends PdoMySqlGrammar
+class PdoMariaDbGrammar extends Grammar
 {
     /**
      * Get the statement
@@ -119,10 +119,6 @@ class PdoMariaDbGrammar extends PdoMySqlGrammar
      */
     protected function getSelectStatement(): string
     {
-        // https://dev.mysql.com/doc/refman/8.0/en/select.html
-        // https://dev.mysql.com/doc/refman/8.0/en/join.html
-        // A table reference can be aliased using tbl_name AS alias_name or tbl_name alias_name
-        
         if (is_null($table = $this->tables->verifyTable($this->table))) {
             throw new GrammarException('Invalid Table ['.(string)$this->table.']!');
         }
@@ -302,8 +298,6 @@ class PdoMariaDbGrammar extends PdoMySqlGrammar
         
         $this->item = $values;
         
-        //$this->bindMany(array_values($values));
-        
         $table = $this->compileTable($table, false);
         
         $columns = $this->compileUpdateColumns($queryTables->getColumns(), $values);
@@ -358,16 +352,6 @@ class PdoMariaDbGrammar extends PdoMySqlGrammar
             if ($column->jsonSegments()) {
                 [$col, $path] = $this->buildJsonColumnAndPath($column);
                 
-                /*echo '<pre>';
-                print_r($column->jsonSegments());
-                print_r($column);
-                var_dump($col);
-                print_r($values[$column->column()]);
-                $dotNotation = implode('.', $column->jsonSegments());
-                $value = Arr::set([], $dotNotation, $values[$column->column()]);
-                var_dump($collection);
-                exit;*/
-                
                 if (isset($values[$column->column()]) && is_array($values[$column->column()])) {
                     
                     // this we need to bind
@@ -376,15 +360,9 @@ class PdoMariaDbGrammar extends PdoMySqlGrammar
                         key: implode('.', $column->jsonSegments()),
                         value: $values[$column->column()]
                     );
-                    
-                    //IFNULL(attributes->'$.test4', JSON_OBJECT()
-                    //var_dump($column->name());
-                    //COALESCE(
+
                     $compiled[] = $this->backtickValue($column->name()).' = json_merge_patch(IF(JSON_TYPE('.$this->backtickValue($column->name()).') is NULL, "{}", '.$this->backtickValue($column->name()).'), ?)';
-                    
-                    //\'{}\'
-                    //$compiled[] = $this->backtickValue($column->name()).' = json_merge_patch('.$this->backtickValue($column->name()).', ?)';
-                    //$compiled[] = $this->backtickValue($column->name()).' = json_set('.$col.', \'$.'.$path.'\', cast(? as json))';
+
                 } else {
                     $compiled[] = $this->backtickValue($column->name()).' = json_set('.$col.', \'$.'.$path.'\', ?)';
                 }
