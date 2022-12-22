@@ -410,6 +410,13 @@ class StorableTablesGrammar extends Grammar
             }
             
             if (is_array($columnValue)) {
+                
+                $v = Arr::get($columnValue, $path);
+                
+                if (is_array($v) && is_array($values[$column->column()])) {
+                    $values[$column->column()] = array_merge($v, $values[$column->column()]);
+                }
+                
                 $columnValue = Arr::set($columnValue, $path, $values[$column->column()]);
             } else {
                 continue;
