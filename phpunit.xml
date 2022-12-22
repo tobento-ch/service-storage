@@ -32,6 +32,11 @@
         <env name="TEST_TOBENTO_STORAGE_PDO_MYSQL_DSN" value="mysql:host=localhost;dbname=tobento_storage_test;charset=utf8mb4" />
         <env name="TEST_TOBENTO_STORAGE_PDO_MYSQL_USERNAME" value="root" />
         <env name="TEST_TOBENTO_STORAGE_PDO_MYSQL_PASSWORD" value="" />
+        
+        <env name="TEST_TOBENTO_STORAGE_PDO_MARIADB" value="false" />
+        <env name="TEST_TOBENTO_STORAGE_PDO_MARIADB_DSN" value="mysql:host=localhost;dbname=tobento_storage_test;charset=utf8mb4" />
+        <env name="TEST_TOBENTO_STORAGE_PDO_MARIADB_USERNAME" value="root" />
+        <env name="TEST_TOBENTO_STORAGE_PDO_MARIADB_PASSWORD" value="" />        
     </php>
     
     <logging>
