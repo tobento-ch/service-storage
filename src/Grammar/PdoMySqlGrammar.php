@@ -193,14 +193,28 @@ class PdoMySqlGrammar extends Grammar
         
         $this->item = $values;
         
+        if (is_array($this->return)) {
+            if (empty($this->return)) {
+                $this->return = $columns;
+            }
+            
+            $this->item = array_intersect_key($this->item, array_flip($this->return));
+        }
+        
+        if (is_null($this->return)) {
+            $this->item = [];
+        }
+        
         $this->bindMany(array_values($values));
         
         $table = $this->compileTable($table, false);
         $compiledColumns = $this->compileInsertColumns($queryTables->getColumns());
         $values = '('.implode(', ', array_fill(0, count($columns), '?')).')';
-        $return = $this->compileReturn($this->return, $this->queryTables);
         
-        return 'INSERT INTO '.$table.' ('.$compiledColumns.') VALUES '.$values.$return;
+        // might be supported in future version.
+        //$return = $this->compileReturn($this->return, $this->queryTables);
+        
+        return 'INSERT INTO '.$table.' ('.$compiledColumns.') VALUES '.$values;
     }
     
     /**
@@ -257,9 +271,11 @@ class PdoMySqlGrammar extends Grammar
         $itemValues = '('.implode(', ', array_fill(0, count($columns), '?')).'),';
         $values = str_repeat($itemValues, count($insertItems));
         $values = rtrim($values, ',');
-        $return = $this->compileReturn($this->return, $this->queryTables);
         
-        return 'INSERT INTO '.$table.' ('.$compiledColumns.') VALUES '.$values.$return;
+        // might be supported in future version.
+        //$return = $this->compileReturn($this->return, $this->queryTables);
+        
+        return 'INSERT INTO '.$table.' ('.$compiledColumns.') VALUES '.$values;
     }
     
     /**
@@ -394,7 +410,8 @@ class PdoMySqlGrammar extends Grammar
             $this->compileWheres($this->wheres),
             $this->compileOrders($this->orders),
             $this->compileLimit($this->limit),
-            trim($this->compileReturn($this->return, $this->queryTables))
+            // might be supported in future version.
+            //trim($this->compileReturn($this->return, $this->queryTables))
         ];
         
         $segments = array_filter($segments, fn($v) => !empty($v));
