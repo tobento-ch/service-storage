@@ -861,7 +861,7 @@ class StorableTablesGrammar extends Grammar
         foreach($wheres as $where)
         {
             if ($where['boolean'] === 'or') {              
-                $filtered = array_unique(array_merge(
+                $filtered = array_unique(array_replace_recursive(
                     $filtered,
                     $this->{"where{$where['type']}"}($items, $where)
                 ), SORT_REGULAR);
