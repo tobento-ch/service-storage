@@ -146,4 +146,36 @@ abstract class StorageDeleteTest extends TestCase
             $deletedItems->action()
         );
     }
+    
+    public function testWithWhere()
+    {
+        $insertedItems = $this->storage
+            ->table('products')
+            ->insertItems([
+                ['sku' => 'glue', 'meta' => ['en' => ['blau', 'rot']]],
+                ['sku' => 'pencil', 'meta' => ['en' => ['yellow']]],
+            ]);
+        
+        $deletedItems = $this->storage->table('products')->where('sku', '=', 'pencil')->delete();
+        
+        $this->assertSame(1, $this->storage->get()->first()['id']);
+    }
+    
+    public function testWithOrWhere()
+    {
+        $insertedItems = $this->storage
+            ->table('products')
+            ->insertItems([
+                ['sku' => 'glue', 'meta' => ['en' => ['blau', 'rot']]],
+                ['sku' => 'pencil', 'meta' => ['en' => ['yellow']]],
+            ]);
+        
+        $deletedItems = $this->storage
+            ->table('products')
+            ->where('sku', '=', 'pencil')
+            ->orWhere('sku', '=', 'pencil')
+            ->delete();
+        
+        $this->assertSame(1, $this->storage->get()->first()['id']);
+    }    
 }
