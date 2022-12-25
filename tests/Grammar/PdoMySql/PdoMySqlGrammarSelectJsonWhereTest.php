@@ -323,7 +323,7 @@ class PdoMySqlGrammarSelectJsonWhereTest extends TestCase
         
         $this->assertSame(
             [
-                'SELECT `id`,`title`,`data` FROM `products` WHERE (json_unquote(json_extract(`data`, \'$."color"\')) is null or json_unquote(json_extract(`data`, \'$."color"\')) = \'NULL\')',
+                'SELECT `id`,`title`,`data` FROM `products` WHERE (json_unquote(json_extract(`data`, \'$."color"\')) is null or json_unquote(json_extract(`data`, \'$."color"\')) = \'NULL\' or json_unquote(json_extract(`data`, \'$."color"\')) = \'null\')',
                 [
                     //
                 ],
@@ -352,7 +352,7 @@ class PdoMySqlGrammarSelectJsonWhereTest extends TestCase
         
         $this->assertSame(
             [
-                'SELECT `p`.`id`,`p`.`title`,`p`.`data` FROM `products` as `p` WHERE (json_unquote(json_extract(`p`.`data`, \'$."color"\')) is null or json_unquote(json_extract(`p`.`data`, \'$."color"\')) = \'NULL\')',
+                'SELECT `p`.`id`,`p`.`title`,`p`.`data` FROM `products` as `p` WHERE (json_unquote(json_extract(`p`.`data`, \'$."color"\')) is null or json_unquote(json_extract(`p`.`data`, \'$."color"\')) = \'NULL\' or json_unquote(json_extract(`p`.`data`, \'$."color"\')) = \'null\')',
                 [
                     //
                 ],
@@ -388,7 +388,7 @@ class PdoMySqlGrammarSelectJsonWhereTest extends TestCase
         
         $this->assertSame(
             [
-                'SELECT `id`,`title`,`data` FROM `products` WHERE (json_unquote(json_extract(`data`, \'$."color"\')) is null or json_unquote(json_extract(`data`, \'$."color"\')) = \'NULL\') and (json_unquote(json_extract(`data`, \'$."material"\')) is null or json_unquote(json_extract(`data`, \'$."material"\')) = \'NULL\')',
+                'SELECT `id`,`title`,`data` FROM `products` WHERE (json_unquote(json_extract(`data`, \'$."color"\')) is null or json_unquote(json_extract(`data`, \'$."color"\')) = \'NULL\' or json_unquote(json_extract(`data`, \'$."color"\')) = \'null\') and (json_unquote(json_extract(`data`, \'$."material"\')) is null or json_unquote(json_extract(`data`, \'$."material"\')) = \'NULL\' or json_unquote(json_extract(`data`, \'$."material"\')) = \'null\')',
                 [
                     //
                 ],
@@ -417,7 +417,7 @@ class PdoMySqlGrammarSelectJsonWhereTest extends TestCase
         
         $this->assertSame(
             [
-                'SELECT `id`,`title`,`data` FROM `products` WHERE (json_unquote(json_extract(`data`, \'$."color"\')) is not null AND json_unquote(json_extract(`data`, \'$."color"\')) != \'NULL\')',
+                'SELECT `id`,`title`,`data` FROM `products` WHERE (json_unquote(json_extract(`data`, \'$."color"\')) is not null AND json_unquote(json_extract(`data`, \'$."color"\')) != \'NULL\' AND json_unquote(json_extract(`data`, \'$."color"\')) != \'null\')',
                 [
                     //
                 ],
@@ -446,7 +446,7 @@ class PdoMySqlGrammarSelectJsonWhereTest extends TestCase
         
         $this->assertSame(
             [
-                'SELECT `p`.`id`,`p`.`title`,`p`.`data` FROM `products` as `p` WHERE (json_unquote(json_extract(`p`.`data`, \'$."color"\')) is not null AND json_unquote(json_extract(`p`.`data`, \'$."color"\')) != \'NULL\')',
+                'SELECT `p`.`id`,`p`.`title`,`p`.`data` FROM `products` as `p` WHERE (json_unquote(json_extract(`p`.`data`, \'$."color"\')) is not null AND json_unquote(json_extract(`p`.`data`, \'$."color"\')) != \'NULL\' AND json_unquote(json_extract(`p`.`data`, \'$."color"\')) != \'null\')',
                 [
                     //
                 ],

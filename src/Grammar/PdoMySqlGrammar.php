@@ -22,6 +22,7 @@ use Tobento\Service\Storage\Tables\TablesInterface;
 use Tobento\Service\Storage\Tables\ColumnInterface;
 use Tobento\Service\Storage\Tables\Column;
 use Tobento\Service\Iterable\Iter;
+use Tobento\Service\Collection\Arr;
 
 /**
  * PdoMySqlGrammar
@@ -317,7 +318,7 @@ class PdoMySqlGrammar extends Grammar
         
         $this->item = $values;
         
-        $this->bindMany(array_values($values));
+        //$this->bindMany(array_values($values));
         
         $table = $this->compileTable($table, false);
         
@@ -374,7 +375,16 @@ class PdoMySqlGrammar extends Grammar
                 [$col, $path] = $this->buildJsonColumnAndPath($column);
                 
                 if (isset($values[$column->column()]) && is_array($values[$column->column()])) {
-                    $compiled[] = $this->backtickValue($column->name()).' = json_set('.$col.', \'$.'.$path.'\', cast(? as json))';
+                    
+                    // this we need to bind
+                    $values[$column->column()] = Arr::set(
+                        array: [],
+                        key: implode('.', $column->jsonSegments()),
+                        value: $values[$column->column()]
+                    );
+
+                    $compiled[] = $this->backtickValue($column->name()).' = json_merge_patch(IF(JSON_TYPE('.$this->backtickValue($column->name()).') is NULL, "{}", '.$this->backtickValue($column->name()).'), ?)';
+
                 } else {
                     $compiled[] = $this->backtickValue($column->name()).' = json_set('.$col.', \'$.'.$path.'\', ?)';
                 }
@@ -382,6 +392,8 @@ class PdoMySqlGrammar extends Grammar
                 $compiled[] = $this->backtickValue($column->name()).' = ?';
             }
         }
+        
+        $this->bindMany(array_values($values));
         
         return implode(', ', $compiled);
     }
@@ -659,7 +671,7 @@ class PdoMySqlGrammar extends Grammar
         $clause = $where['boolean'].' '.$col.' is null';
         
         if ($column->jsonSegments()) {
-            $clause = $where['boolean'].' ('.$col.' is null or '.$col.' = \'NULL\')';
+            $clause = $where['boolean'].' ('.$col.' is null or '.$col.' = \'NULL\' or '.$col.' = \'null\')';
         }
 
         return $clause;
@@ -694,7 +706,7 @@ class PdoMySqlGrammar extends Grammar
         $clause = $where['boolean'].' '.$col.' is not null';
         
         if ($column->jsonSegments()) {
-            $clause = $where['boolean'].' ('.$col.' is not null AND '.$col.' != \'NULL\')';
+            $clause = $where['boolean'].' ('.$col.' is not null AND '.$col.' != \'NULL\' AND '.$col.' != \'null\')';
         }
         
         return $clause;

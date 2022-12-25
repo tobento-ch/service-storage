@@ -102,10 +102,10 @@ class PdoMySqlGrammarUpdateJsonTest extends TestCase
         
         $this->assertSame(
             [
-                'UPDATE `products` SET `sku` = ?, `data` = json_set(`data`, \'$."color"\', cast(? as json))',
+                'UPDATE `products` SET `sku` = ?, `data` = json_merge_patch(IF(JSON_TYPE(`data`) is NULL, "{}", `data`), ?)',
                 [
                     0 => 'Sku',
-                    1 => '["blue"]',
+                    1 => '{"color":["blue"]}',
                 ],
             ],
             [
@@ -113,5 +113,5 @@ class PdoMySqlGrammarUpdateJsonTest extends TestCase
                 $grammar->getBindings()
             ]
         );   
-    }    
+    }
 }
