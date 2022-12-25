@@ -70,44 +70,4 @@ class StorageJsonTest extends \Tobento\Service\Storage\Test\StorageJsonTest
         
         $processor->process($table, $this->database);
     }
-    
-    public function testWhereNullGetMethod()
-    {
-        $items = $this->storage->table('products')
-            ->index('id')
-            ->whereNull('data->color')
-            ->get();
-        
-        $this->assertEquals(
-            [1 => $this->products[1], 2 => $this->products[2]],
-            $items->all()
-        );       
-    }
-    
-    public function testWhereNullMultipleGetMethod()
-    {
-        $items = $this->storage->table('products')
-            ->index('id')
-            ->whereNull('data->color')
-            ->whereNull('data->material')
-            ->get();
-        
-        $this->assertEquals(
-            [1 => $this->products[1], 2 => $this->products[2]],
-            $items->all()
-        );       
-    }
-    
-    public function testWhereNotNullGetMethod()
-    {
-        $items = $this->storage->table('products')
-            ->index('id')
-            ->whereNotNull('data->color')
-            ->get();
-        
-        $this->assertEquals(
-            [3 => $this->products[3], 4 => $this->products[4], 5 => $this->products[5], 6 => $this->products[6]],
-            $items->all()
-        );       
-    }    
 }
