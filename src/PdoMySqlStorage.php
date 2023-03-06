@@ -53,6 +53,16 @@ class PdoMySqlStorage extends Storage
         
         parent::__construct($tables);
     }
+    
+    /**
+     * Returns the pdo.
+     *
+     * @return PDO
+     */
+    public function pdo(): PDO
+    {
+        return $this->pdo;
+    }
 
     /**
      * Fetches the table items.
@@ -88,6 +98,26 @@ class PdoMySqlStorage extends Storage
         );
 
         return $this->table($table->name())->insertItems($items);
+    }
+    
+    /**
+     * Deletes the specified table.
+     *
+     * @param string $table The table name.
+     * @return void
+     */
+    public function deleteTable(string $table): void
+    {
+        if (is_null($table = $this->tables()->verifyTable($table))) {
+            return;
+        }
+        
+        $this->execute(
+            statement: 'DROP TABLE IF EXISTS `'.$table->name().'`',
+            bindings: []
+        );
+        
+        $this->tables()->removeTable($table->name());
     }
     
     /**
