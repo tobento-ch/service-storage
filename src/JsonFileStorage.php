@@ -92,4 +92,28 @@ class JsonFileStorage extends InMemoryStorage
 
         return $items;
     }
+    
+    /**
+     * Deletes the specified table.
+     *
+     * @param string $table The table name.
+     * @return void
+     */
+    public function deleteTable(string $table): void
+    {
+        if (is_null($table = $this->tables()->verifyTable($table))) {
+            return;
+        }
+        
+        if (
+            $this->transactionLevel > 0
+            && !isset($this->transactionItems[$this->transactionLevel][$table->name()])
+        ) {
+            $this->transactionItems[$this->transactionLevel][$table->name()] = $this->fetchItems($table->name());
+        }
+        
+        (new JsonFile($this->dir.$table->name().'.json'))->delete();
+        
+        $this->tables()->removeTable($table->name());
+    }
 }
