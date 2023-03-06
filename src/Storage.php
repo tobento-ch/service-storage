@@ -105,6 +105,18 @@ abstract class Storage implements StorageInterface
     }
     
     /**
+     * Returns a new storage instance.
+     *
+     * @return static
+     */
+    public function new(): static
+    {
+        $new = clone $this;
+        $new->tables = new Tables();
+        return $new;
+    }
+    
+    /**
      * Get the tables.
      *
      * @return TablesInterface
@@ -157,7 +169,18 @@ abstract class Storage implements StorageInterface
     public function storeItems(string $table, iterable $items): iterable
     {
         return [];
-    }    
+    }
+    
+    /**
+     * Deletes the specified table.
+     *
+     * @param string $table The table name.
+     * @return void
+     */
+    public function deleteTable(string $table): void
+    {
+        //
+    }
 
     /**
      * The columns to select.
