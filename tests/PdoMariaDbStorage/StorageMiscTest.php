@@ -70,4 +70,9 @@ class StorageMiscTest extends \Tobento\Service\Storage\Test\StorageMiscTest
         
         $processor->process($table, $this->database);
     }
+    
+    public function testPdoMethod()
+    {
+        $this->assertInstanceof(PDO::class, $this->storage->pdo());
+    }
 }

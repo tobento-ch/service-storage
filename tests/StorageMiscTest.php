@@ -123,4 +123,28 @@ abstract class StorageMiscTest extends TestCase
             array_values($items)
         );        
     }
+    
+    public function testDeleteTableMethod()
+    {
+        $storeData = [
+            ['id' => 1, 'sku' => 'foo', 'price' => '3.00', 'title' => ''],
+        ];
+        
+        $items = $this->storage->storeItems('products', $storeData);
+        
+        $this->assertSame(1, $this->storage->table('products')->count());
+        
+        $this->storage->deleteTable('products');
+        
+        try {
+            // will fail as table was deleted.
+            $deleted = false;
+            $this->storage->table('products')->count();
+        } catch (GrammarException $e) {
+            $deleted = true;
+        }
+        
+        $this->assertSame(null, $this->storage->tables()->getTable('products'));
+        $this->assertTrue($deleted);
+    }
 }

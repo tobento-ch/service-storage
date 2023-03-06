@@ -96,5 +96,10 @@ class StorageMiscTest extends \Tobento\Service\Storage\Test\StorageMiscTest
                 ['id' => 2, 'sku' => 'bar', 'price' => '5.56', 'title' => ''],
             ]
         );        
-    }    
+    }
+    
+    public function testPdoMethod()
+    {
+        $this->assertInstanceof(PDO::class, $this->storage->pdo());
+    }
 }

@@ -79,6 +79,14 @@ abstract class StorageTest extends TestCase
     public function tearDown(): void
     {
         //$this->storage = null;
+    }
+    
+    public function testNewMethod()
+    {        
+        $storage = $this->storage->new();
+        
+        $this->assertFalse($storage === $this->storage);
+        $this->assertFalse($storage->tables() === $this->storage->tables());
     }    
 
     public function testGetMethodWithoutTableSetThrowsGrammarException()
