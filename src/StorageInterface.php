@@ -17,12 +17,20 @@ use Tobento\Service\Storage\Grammar\GrammarInterface;
 use Tobento\Service\Storage\Tables\TablesInterface;
 use Tobento\Service\Storage\Query\SubQuery;
 use Closure;
+use Throwable;
 
 /**
  * StorageInterface
  */
 interface StorageInterface
 {
+    /**
+     * Returns a new storage instance.
+     *
+     * @return static
+     */
+    public function new(): static;
+    
    /**
      * Get the tables.
      *
@@ -61,6 +69,14 @@ interface StorageInterface
      * @return iterable The stored items.
      */
     public function storeItems(string $table, iterable $items): iterable;
+    
+    /**
+     * Deletes the specified table.
+     *
+     * @param string $table The table name.
+     * @return void
+     */
+    public function deleteTable(string $table): void;
 
     /**
      * The columns to select.
@@ -651,6 +667,15 @@ interface StorageInterface
      * @return bool Returns true on success or false on failure.
      */
     public function rollback(): bool;
+    
+    /**
+     * Execute a transaction.
+     *
+     * @param callable $callback
+     * @return void
+     * @throws Throwable
+     */
+    public function transaction(callable $callback): void;
     
     /**
      * Returns true if supporting nested transactions, otherwise false.
