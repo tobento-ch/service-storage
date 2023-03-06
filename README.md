@@ -34,6 +34,7 @@ The Storage Service comes with a query builder for storing and fetching items.
         - [Delete Statements](#delete-statements)
         - [Transactions](#transactions)
         - [Chunking Results and Inserts](#chunking-results-and-inserts)
+        - [Miscellaneous](#miscellaneous)
         - [Debugging](#debugging)
     - [Item Interface](#item-interface)
     - [Items Interface](#items-interface)
@@ -967,6 +968,43 @@ $insertedItems = $storage
 
 var_dump($insertedItems->count());
 // int(2)
+```
+
+### Miscellaneous
+
+**new**
+
+The new method will return a new storage instance.
+
+```php
+$newStorage = $storage->new();
+```
+
+**fetchItems**
+
+The fetchItems method will return all table items.
+
+```php
+$iterable = $storage->fetchItems(table: 'products');
+```
+
+**storeItems**
+
+The storeItems method will store the items to the table which will be truncated first.
+
+```php
+$storedItems = $storage->storeItems(
+    table: 'products',
+    items: [] // iterable
+);
+```
+
+**deleteTable**
+
+The deleteTable method will delete the table completely.
+
+```php
+$storage->deleteTable('products');
 ```
 
 ### Debugging
