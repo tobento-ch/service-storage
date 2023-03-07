@@ -1194,6 +1194,27 @@ var_dump($items->first());
 // array(1) { ["foo"]=> string(3) "Foo" }
 ```
 
+**map**
+
+Map over each of the items returning a new instance.
+
+```php
+use Tobento\Service\Storage\Items;
+use Tobento\Service\Storage\Item;
+
+$items = new Items([
+    ['foo' => 'Foo'],
+    ['bar' => 'Bar'],
+]);
+
+$itemsNew = $items->map(function(array $item): object {
+    return new Item($item);
+});
+
+var_dump($itemsNew->first());
+// object(Tobento\Service\Storage\Item)#8 ...
+```
+
 **count**
 
 Returns the number of the items.

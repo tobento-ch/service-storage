@@ -16,6 +16,7 @@ namespace Tobento\Service\Storage;
 use Tobento\Service\Support\Arrayable;
 use Tobento\Service\Support\Jsonable;
 use Tobento\Service\Iterable\Iter;
+use Generator;
 
 /**
  * Items
@@ -66,9 +67,9 @@ class Items implements ItemsInterface, Arrayable, Jsonable
     /**
      * Returns the first item.
      *
-     * @return null|array
+     * @return null|array|object
      */    
-    public function first(): null|array
+    public function first(): null|array|object
     {
         $key = array_key_first($this->items);
         
@@ -77,5 +78,22 @@ class Items implements ItemsInterface, Arrayable, Jsonable
         }
         
         return $this->items[$key];
+    }
+
+    /**
+     * Returns a new instance with the mapped items.
+     *
+     * @param callable $mapper
+     * @return static
+     */
+    public function map(callable $mapper): static
+    {
+        $generator = (static function(iterable $items) use ($mapper): Generator {
+            foreach($items as $key => $item) {
+                yield $key => $mapper($item);
+            }
+        })($this->items);
+
+        return new static($generator, $this->itemsCount, $this->action);
     }
 }

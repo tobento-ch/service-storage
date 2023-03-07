@@ -56,7 +56,15 @@ interface ItemsInterface extends ArrayAccess, Countable, IteratorAggregate
     /**
      * Returns the first item.
      *
-     * @return null|array
+     * @return null|array|object
      */    
-    public function first(): null|array;    
+    public function first(): null|array|object;
+    
+    /**
+     * Returns a new instance with the mapped items.
+     *
+     * @param callable $mapper
+     * @return static
+     */
+    public function map(callable $mapper): static;
 }
