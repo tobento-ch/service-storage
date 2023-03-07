@@ -14,8 +14,10 @@ declare(strict_types=1);
 namespace Tobento\Service\Storage\Test;
 
 use PHPUnit\Framework\TestCase;
-use Tobento\Service\Storage\Items;
 use Tobento\Service\Storage\ItemsInterface;
+use Tobento\Service\Storage\Items;
+use Tobento\Service\Storage\ItemInterface;
+use Tobento\Service\Storage\Item;
 use Tobento\Service\Collection\Collection;
 
 /**
@@ -113,4 +115,20 @@ class ItemsTest extends TestCase
         
         $this->assertSame(null, $items->first());
     }
+    
+    public function testMapMethod()
+    {
+        $items = new Items([
+            ['foo' => 'Foo'],
+            ['bar' => 'Bar'],
+        ]);
+        
+        $itemsNew = $items->map(function(array $item): object {
+            return new Item($item);
+        });
+        
+        $this->assertFalse($items === $itemsNew);
+        
+        $this->assertInstanceof(ItemInterface::class, $itemsNew->first());
+    }    
 }
