@@ -1017,6 +1017,17 @@ abstract class Storage implements StorageInterface
     }
     
     /**
+     * Returns true if supports returning items, otherwise false.
+     *
+     * @param string $method The methods such as insert, insertMany, update, delete.
+     * @return bool
+     */
+    public function supportsReturningItems(string $method): bool
+    {
+        return false;
+    }
+    
+    /**
      * Clear query
      *
      * @return static $this

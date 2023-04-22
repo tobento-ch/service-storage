@@ -565,7 +565,22 @@ class PdoMariaDbStorage extends Storage
     public function supportsNestedTransactions(): bool
     {
         return true;
-    }    
+    }
+    
+    /**
+     * Returns true if supports returning items, otherwise false.
+     *
+     * @param string $method The methods such as insert, insertMany, update, delete.
+     * @return bool
+     */
+    public function supportsReturningItems(string $method): bool
+    {
+        if ($method === 'update') {
+            return false;
+        }
+        
+        return true;
+    }
 
     /**
      * Get the query.

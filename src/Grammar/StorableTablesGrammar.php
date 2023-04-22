@@ -899,13 +899,13 @@ class StorableTablesGrammar extends Grammar
         }
 
         if (is_null($operator = $this->verifyOperator($where['operator']))) {
-            return [];
+            $operator = '=';
         }
 
         $value = $this->verifyValue($where['value']);
         
         if (is_null($value) && $where['value'] !== null) {
-            return [];
+            $value = false;
         }
         
         return array_filter($items, function($item) use ($column, $value, $operator) {
@@ -1108,7 +1108,7 @@ class StorableTablesGrammar extends Grammar
         }
 
         if (is_null($operator = $this->verifyOperator($where['operator']))) {
-            return $items;
+            $operator = '=';
         }
         
         if (is_null($value = $this->queryTables->verifyColumn($where['value']))) {
@@ -1276,11 +1276,11 @@ class StorableTablesGrammar extends Grammar
         }
         
         if (!in_array($where['operator'], ['IN', 'NOT IN'])) {
-            return $items;
+            $where['operator'] = 'IN';
         }
 
         if (!is_array($where['value']) || empty($where['value'])) {
-            return $items;
+            return [];
         }
         
         $operator = $where['operator'];
@@ -1338,11 +1338,11 @@ class StorableTablesGrammar extends Grammar
         }
 
         if (!in_array($where['operator'], ['=', '!='])) {
-            return [];
+            $where['operator'] = '=';
         }
         
         if (!in_array($where['boolean'], ['and', 'or'])) {
-            return [];
+            $where['boolean'] = 'and';
         }
         
         $value = $where['value'];
@@ -1414,11 +1414,11 @@ class StorableTablesGrammar extends Grammar
         }
 
         if (!in_array($where['operator'], ['=', '!='])) {
-            return [];
+            $where['operator'] = '=';
         }
         
         if (!in_array($where['boolean'], ['and', 'or'])) {
-            return [];
+            $where['boolean'] = 'and';
         }
         
         if (empty($column->jsonSegments())) {
@@ -1476,11 +1476,11 @@ class StorableTablesGrammar extends Grammar
         }
 
         if (is_null($operator = $this->verifyOperator($where['operator']))) {
-            return [];
+            $operator = '=';
         }
         
         if (!in_array($where['boolean'], ['and', 'or'])) {
-            return [];
+            $where['boolean'] = 'and';
         }
         
         $value = $where['value'];
@@ -1590,11 +1590,11 @@ class StorableTablesGrammar extends Grammar
         $value = $this->verifyValue($where['value']);
 
         if (is_null($value) && $where['value'] !== null){
-            return $items;
+            return [];
         }
         
         if ($this->verifyOperator($where['operator']) === null) {
-            return $items;
+            return [];
         }
         
         throw new GrammarException('Not Yet Supported!');
@@ -1620,7 +1620,7 @@ class StorableTablesGrammar extends Grammar
             $this->verifyOperator($where['operator']) === null
             && !in_array($where['operator'], ['IN', 'NOT IN', 'ANY', 'SOME'])
         ) {
-            return $items;
+            $where['operator'] = 'IN';
         }
         
         if ($callback instanceof SubQuery) {

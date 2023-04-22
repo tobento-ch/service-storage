@@ -553,6 +553,18 @@ class InMemoryStorage extends Storage
     {
         return true;
     }
+    
+    /**
+     * Returns true if supports returning items, otherwise false.
+     *
+     * @param string $method The methods such as insert, insertMany, update, delete.
+     * @return bool
+     */
+    public function supportsReturningItems(string $method): bool
+    {
+        // supports all methods.
+        return true;
+    }
 
     /**
      * Get the query.

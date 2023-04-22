@@ -580,17 +580,17 @@ class PdoMySqlGrammar extends Grammar
         }
         
         if (is_null($operator = $this->verifyOperator($where['operator']))) {
-            return null;
+            $operator = '=';
         }
         
         if (!in_array($where['boolean'], ['and', 'or'])) {
-            return null;
-        }    
+            $where['boolean'] = 'and';
+        }
 
         $value = $this->verifyValue($where['value']);
         
         if (is_null($value) && $where['value'] !== null) {
-            return null;
+            $where['value'] = false;
         }
         
         $this->bind($where['value']);
@@ -625,11 +625,11 @@ class PdoMySqlGrammar extends Grammar
         }
     
         if (is_null($operator = $this->verifyOperator($where['operator']))) {
-            return null;
+            $operator = '=';
         }
         
         if (!in_array($where['boolean'], ['and', 'or'])) {
-            return null;
+            $where['boolean'] = 'and';
         }    
 
         if (is_null($value = $this->queryTables->verifyColumn($where['value']))) {
@@ -659,7 +659,7 @@ class PdoMySqlGrammar extends Grammar
         }
         
         if (!in_array($where['boolean'], ['and', 'or'])) {
-            return null;
+            $where['boolean'] = 'and';
         }    
         
         if (is_null($column = $this->queryTables->verifyColumn($where['column']))) {
@@ -694,7 +694,7 @@ class PdoMySqlGrammar extends Grammar
         }
         
         if (!in_array($where['boolean'], ['and', 'or'])) {
-            return null;
+            $where['boolean'] = 'and';
         }    
         
         if (is_null($column = $this->queryTables->verifyColumn($where['column']))) {
@@ -737,15 +737,15 @@ class PdoMySqlGrammar extends Grammar
         }
 
         if (!in_array($where['operator'], ['IN', 'NOT IN'])) {
-            return null;
+            $where['operator'] = 'IN';
         }
         
         if (!in_array($where['boolean'], ['and', 'or'])) {
-            return null;
+            $where['boolean'] = 'and';
         }
         
         if (!is_array($where['value']) || empty($where['value'])) {
-            return null;
+            return $where['boolean'].' 0 = 1';
         }
 
         $values = array_values($where['value']);
@@ -780,16 +780,16 @@ class PdoMySqlGrammar extends Grammar
         if (is_null($column = $this->queryTables->verifyColumn($where['column']))) {
             return null;
         }
+        
+        if (!in_array($where['boolean'], ['and', 'or'])) {
+            $where['boolean'] = 'and';
+        }
 
         if (!is_array($where['value']) || empty($where['value'])) {
-            return null;
+            return $where['boolean'].' 0 = 1';
         }
         
         $between = $where['operator'] === '!=' ? 'not between' : 'between';
-
-        if (!in_array($where['boolean'], ['and', 'or'])) {
-            return null;
-        }
         
         $values = array_values($where['value']);
         
@@ -833,17 +833,17 @@ class PdoMySqlGrammar extends Grammar
         }
 
         if (!in_array($where['operator'], ['=', '!='])) {
-            return null;
+            $where['operator'] = '=';
         }
         
         if (!in_array($where['boolean'], ['and', 'or'])) {
-            return null;
+            $where['boolean'] = 'and';
         }
         
         $value = $this->encodeJsonValue($where['value']);
         
         if (is_null($value)) {
-            return null;
+            $value = false;
         }
 
         $this->bind($value);
@@ -878,11 +878,11 @@ class PdoMySqlGrammar extends Grammar
         }
 
         if (!in_array($where['operator'], ['=', '!='])) {
-            return null;
+            $where['operator'] = '=';
         }
         
         if (!in_array($where['boolean'], ['and', 'or'])) {
-            return null;
+            $where['boolean'] = 'and';
         }
         
         if (empty($column->jsonSegments())) {
@@ -915,17 +915,17 @@ class PdoMySqlGrammar extends Grammar
         }
 
         if (is_null($operator = $this->verifyOperator($where['operator']))) {
-            return null;
+            $operator = '=';
         }
         
         if (!in_array($where['boolean'], ['and', 'or'])) {
-            return null;
+            $where['boolean'] = 'and';
         }    
         
         $value = $this->verifyValue($where['value']);
         
         if (is_null($value) && $where['value'] !== null) {
-            return null;
+            $value = false;
         }
 
         $this->bind($value);
@@ -1004,7 +1004,7 @@ class PdoMySqlGrammar extends Grammar
         }
         
         if (!in_array($where['boolean'], ['and', 'or'])) {
-            return null;
+            $where['boolean'] = 'and';
         }    
         
         return $where['boolean'].' ('.$wheres.')';
@@ -1022,15 +1022,15 @@ class PdoMySqlGrammar extends Grammar
         $value = $this->verifyValue($where['value']);
         
         if (is_null($value) && $where['value'] !== null){
-            return null;
+            $where['value'] = false;
         }
 
         if ($this->verifyOperator($where['operator']) === null) {
-            return null;
+            $where['operator'] = '=';
         }
         
         if (!in_array($where['boolean'], ['and', 'or'])) {
-            return null;
+            $where['boolean'] = 'and';
         }    
         
         $grammar = $this->createGrammarFromStorage($query->storage());
@@ -1064,11 +1064,11 @@ class PdoMySqlGrammar extends Grammar
             $this->verifyOperator($where['operator']) === null
             && !in_array($where['operator'], ['IN', 'NOT IN', 'ANY', 'SOME'])
         ) {
-            return null;
+            $where['operator'] = '=';
         }
         
         if (!in_array($where['boolean'], ['and', 'or'])) {
-            return null;
+            $where['boolean'] = 'and';
         }
         
         $column = $this->compileWhereColumn($column);
@@ -1194,17 +1194,17 @@ class PdoMySqlGrammar extends Grammar
         }
         
         if (is_null($this->verifyOperator($having['operator']))) {
-            return null;
+            $having['operator'] = '=';
         }
         
         if (!in_array($having['boolean'], ['and', 'or'])) {
-            return null;
+            $having['boolean'] = 'and';
         }
         
         $value = $this->verifyValue($having['value']);
         
         if (is_null($value) && $having['value'] !== null){
-            return null;
+            $having['value'] = false;
         }
 
         $this->bind($having['value']);
@@ -1233,7 +1233,7 @@ class PdoMySqlGrammar extends Grammar
         }        
  
         if (!in_array($having['boolean'], ['and', 'or'])) {
-            return null;
+            $having['boolean'] = 'and';
         }
         
         $min = $having['value'][0] ?? null;
