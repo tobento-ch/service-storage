@@ -108,7 +108,7 @@ abstract class StorageTest extends TestCase
         $items = $this->storage->table('products')->index('id')->where('sku', '=', 'glue')->get();
         
         $this->assertEquals([3 => $this->products[3]], $items->all());      
-    }
+    }    
     
     public function testWhereNotEqualGetMethod()
     {        
@@ -129,13 +129,20 @@ abstract class StorageTest extends TestCase
             $items->all()
         );
     }  
-
+    
     public function testWhereGreaterGetMethod()
     {        
         $items = $this->storage->table('products')->index('id')->where('price', '>', 12)->get();
         
         $this->assertEquals([3 => $this->products[3]], $items->all());
     }
+    
+    public function testWhereWithStringValueGetMethod()
+    {        
+        $items = $this->storage->table('products')->index('id')->where('price', '>', '12')->get();
+        
+        $this->assertEquals([3 => $this->products[3]], $items->all());
+    }    
     
     public function testWhereGreaterOrEqualGetMethod()
     {        
