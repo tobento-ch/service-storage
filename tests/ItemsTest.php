@@ -130,5 +130,21 @@ class ItemsTest extends TestCase
         $this->assertFalse($items === $itemsNew);
         
         $this->assertInstanceof(ItemInterface::class, $itemsNew->first());
-    }    
+    }
+    
+    public function testReindexMethod()
+    {
+        $items = new Items([
+            ['sku' => 'foo', 'name' => 'Foo'],
+            ['sku' => 'bar', 'name' => 'Bar'],
+            ['sku' => 'foo', 'name' => 'Another'],
+        ]);
+        
+        $itemsNew = $items->reindex(function(array $item): int|string {
+            return $item['sku'];
+        });
+        
+        $this->assertFalse($items === $itemsNew);
+        $this->assertsame(['foo', 'bar'], array_keys($itemsNew->all()));
+    }
 }

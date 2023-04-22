@@ -96,4 +96,21 @@ class Items implements ItemsInterface, Arrayable, Jsonable
 
         return new static($generator, $this->itemsCount, $this->action);
     }
+    
+    /**
+     * Returns a new instance with the reindexed items.
+     *
+     * @param callable $indexer
+     * @return static
+     */
+    public function reindex(callable $indexer): static
+    {
+        $generator = (static function(iterable $items) use ($indexer): Generator {
+            foreach($items as $key => $item) {
+                yield $indexer($item) => $item;
+            }
+        })($this->items);
+
+        return new static($generator, $this->itemsCount, $this->action);
+    }
 }
