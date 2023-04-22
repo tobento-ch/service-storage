@@ -1215,6 +1215,26 @@ var_dump($itemsNew->first());
 // object(Tobento\Service\Storage\Item)#8 ...
 ```
 
+**reindex**
+
+Reindex items returning a new instance.
+
+```php
+use Tobento\Service\Storage\Items;
+
+$items = new Items([
+    ['sku' => 'foo', 'name' => 'Foo'],
+    ['sku' => 'bar', 'name' => 'Bar'],
+]);
+
+$itemsNew = $items->reindex(function(array $item): int|string {
+    return $item['sku'];
+});
+
+var_dump(array_keys($itemsNew->all()));
+// array(2) {[0]=> string(3) "foo" [1]=> string(3) "bar"}
+```
+
 **count**
 
 Returns the number of the items.
