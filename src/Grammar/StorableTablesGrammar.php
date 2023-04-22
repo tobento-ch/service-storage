@@ -936,9 +936,9 @@ class StorableTablesGrammar extends Grammar
 
             switch ($operator) {
                 case '=':
-                    return $itemValue === $value;
+                    return $itemValue == $value;
                 case '!=':
-                    return $itemValue !== $value;
+                    return $itemValue != $value;
                 case '>':
                     return $itemValue > $value;
                 case '<':
@@ -1165,9 +1165,9 @@ class StorableTablesGrammar extends Grammar
             
             switch ($operator) {
                 case '=':
-                    return $itemValue === $value;
+                    return $itemValue == $value;
                 case '!=':
-                    return $itemValue !== $value;
+                    return $itemValue != $value;
                 case '>':
                     return $itemValue > $value;
                 case '<':
@@ -1523,9 +1523,9 @@ class StorableTablesGrammar extends Grammar
             
             switch ($operator) {
                 case '=':
-                    return count($columnValue) === $value;
+                    return count($columnValue) == $value;
                 case '!=':
-                    return count($columnValue) !== $value;
+                    return count($columnValue) != $value;
                 case '>':
                     return count($columnValue) > $value;
                 case '<':
