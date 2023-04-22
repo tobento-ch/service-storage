@@ -410,7 +410,7 @@ class PdoMySqlGrammarSelectWhereBaseTest extends TestCase
         );   
     }
     
-    public function testWithInvalidOperatorSkipsWhere()
+    public function testWithInvalidOperatorUsesDefault()
     {        
         $grammar = (new PdoMySqlGrammar($this->tables))
             ->table('products')
@@ -427,17 +427,17 @@ class PdoMySqlGrammarSelectWhereBaseTest extends TestCase
         
         $this->assertSame(
             [
-                'SELECT `id`,`sku`,`price`,`title` FROM `products`',
-                [],
+                'SELECT `id`,`sku`,`price`,`title` FROM `products` WHERE `id` = ?',
+                [0 => '1'],
             ],
             [
                 $grammar->getStatement(),
                 $grammar->getBindings()
             ]
-        );   
+        );
     }
     
-    public function testWithInvalidBooleanDoesSkipsWhere()
+    public function testWithInvalidBooleanUsesDefault()
     {        
         $grammar = (new PdoMySqlGrammar($this->tables))
             ->table('products')
@@ -450,18 +450,25 @@ class PdoMySqlGrammarSelectWhereBaseTest extends TestCase
                     'operator' => '=',
                     'boolean' => 'invalid',
                 ],
+                [
+                    'type' => 'Base',
+                    'column' => 'sku',
+                    'value' => '1',
+                    'operator' => '=',
+                    'boolean' => 'invalid',
+                ],
             ]);
         
         $this->assertSame(
             [
-                'SELECT `id`,`sku`,`price`,`title` FROM `products`',
-                [],
+                'SELECT `id`,`sku`,`price`,`title` FROM `products` WHERE `id` = ? and `sku` = ?',
+                [0 => '1', 1 => '1'],
             ],
             [
                 $grammar->getStatement(),
                 $grammar->getBindings()
             ]
-        );   
+        );
     }    
     
     public function testWithMultiple()
@@ -667,5 +674,32 @@ class PdoMySqlGrammarSelectWhereBaseTest extends TestCase
                 $grammar->getBindings()
             ]
         );   
-    }    
+    }
+    
+    public function testWithInvalidValueSetsFalse()
+    {
+        $grammar = (new PdoMySqlGrammar($this->tables))
+            ->table('products')
+            ->select()
+            ->wheres([
+                [
+                    'type' => 'Base',
+                    'column' => 'id',
+                    'value' => [],
+                    'operator' => '=',
+                    'boolean' => 'and',
+                ],
+            ]);
+        
+        $this->assertSame(
+            [
+                'SELECT `id`,`sku`,`price`,`title` FROM `products` WHERE `id` = ?',
+                [0 => false],
+            ],
+            [
+                $grammar->getStatement(),
+                $grammar->getBindings()
+            ]
+        );
+    }
 }

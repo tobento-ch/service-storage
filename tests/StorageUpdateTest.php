@@ -243,4 +243,24 @@ abstract class StorageUpdateTest extends TestCase
             $this->storage->table('products')->select('sku')->get()->all()
         );
     }
+    
+    public function testWithInvalidWhereColumnValueShouldNotUpdateAny()
+    {
+        $insertedItems = $this->storage
+            ->table('products')
+            ->insertItems([['sku' => 'glue'], ['sku' => 'pencil']]);
+        
+        $updatedItems = $this->storage
+            ->table('products')
+            ->where('sku', '=', [])
+            ->update(['sku' => 'pen new']);
+
+        $this->assertEquals(
+            'update',
+            $updatedItems->action()
+        );
+        
+        $this->assertSame(2, $this->storage->get()->count());
+        $this->assertSame(0, $updatedItems->count());
+    }
 }

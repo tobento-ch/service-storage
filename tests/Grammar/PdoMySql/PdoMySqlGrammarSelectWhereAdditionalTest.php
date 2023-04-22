@@ -62,6 +62,33 @@ class PdoMySqlGrammarSelectWhereAdditionalTest extends TestCase
         );   
     }
     
+    public function testWhereInWithEmptyValues()
+    {
+        $grammar = (new PdoMySqlGrammar($this->tables))
+            ->table('products')
+            ->select()
+            ->wheres([
+                [
+                    'type' => 'In',
+                    'column' => 'title',
+                    'value' => [],
+                    'operator' => 'IN',
+                    'boolean' => 'and',
+                ],
+            ]);
+        
+        $this->assertSame(
+            [
+                'SELECT `id`,`sku`,`price`,`title` FROM `products` WHERE 0 = 1',
+                [],
+            ],
+            [
+                $grammar->getStatement(),
+                $grammar->getBindings()
+            ]
+        );   
+    }
+    
     public function testWhereInWithTableAlias()
     {        
         $grammar = (new PdoMySqlGrammar($this->tables))
@@ -273,6 +300,33 @@ class PdoMySqlGrammarSelectWhereAdditionalTest extends TestCase
                     0 => 1,
                     1 => 100,
                 ],
+            ],
+            [
+                $grammar->getStatement(),
+                $grammar->getBindings()
+            ]
+        );   
+    }
+    
+    public function testWhereBetweenEmptyArray()
+    {
+        $grammar = (new PdoMySqlGrammar($this->tables))
+            ->table('products')
+            ->select()
+            ->wheres([
+                [
+                    'type' => 'Between',
+                    'column' => 'title',
+                    'value' => [],
+                    'operator' => '=',
+                    'boolean' => 'and',
+                ],
+            ]);
+        
+        $this->assertSame(
+            [
+                'SELECT `id`,`sku`,`price`,`title` FROM `products` WHERE 0 = 1',
+                [],
             ],
             [
                 $grammar->getStatement(),

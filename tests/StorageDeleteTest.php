@@ -177,5 +177,20 @@ abstract class StorageDeleteTest extends TestCase
             ->delete();
         
         $this->assertSame(1, $this->storage->get()->first()['id']);
-    }    
+    }
+    
+    public function testWithInvalidWhereColumnValueShouldNotDeleteAny()
+    {
+        $insertedItems = $this->storage
+            ->table('products')
+            ->insertItems([['sku' => 'glue'], ['sku' => 'pencil']]);
+        
+        $deletedItems = $this->storage->table('products')->where('sku', '=', [])->delete();
+        $this->assertSame(2, $this->storage->get()->count());
+        $this->assertSame(0, $deletedItems->count());
+        
+        $deletedItems = $this->storage->table('products')->where('sku', '=', [[]])->delete();
+        $this->assertSame(2, $this->storage->get()->count());
+        $this->assertSame(0, $deletedItems->count());
+    }
 }
