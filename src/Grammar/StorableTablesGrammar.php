@@ -857,10 +857,11 @@ class StorableTablesGrammar extends Grammar
     protected function applyWheres(array $items, array $wheres): array
     {
         $filtered = $items;
+        $whereCount = count($wheres);
         
         foreach($wheres as $where)
         {
-            if ($where['boolean'] === 'or') {              
+            if ($whereCount > 1 && $where['boolean'] === 'or') {              
                 $filtered = array_unique(array_replace_recursive(
                     $filtered,
                     $this->{"where{$where['type']}"}($items, $where)
