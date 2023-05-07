@@ -348,6 +348,17 @@ abstract class StorageTest extends TestCase
         );       
     }    
     
+    public function testOrWhereGetMethod()
+    {        
+        $items = $this->storage->table('products')->index('id')->orWhere('sku', '=', 'paper')->get();
+        
+        $this->assertEquals([1 => $this->products[1]], $items->all());
+        
+        $items = $this->storage->table('products')->index('id')->orWhere('sku', '=', 'foo')->get();
+        
+        $this->assertSame([], $items->all());        
+    }
+    
     public function testWhereOrWhereGetMethod()
     {        
         $items = $this->storage->table('products')->index('id')->where('price', '<=>', 12)->orWhere('sku', '=', 'paper')->get();
