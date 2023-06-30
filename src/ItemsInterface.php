@@ -61,10 +61,29 @@ interface ItemsInterface extends ArrayAccess, Countable, IteratorAggregate
     public function first(): null|array|object;
     
     /**
+     * Returns the column of the items.
+     *
+     * @param string $column
+     * @param null|string $index
+     * @return array
+     */
+    public function column(string $column, null|string $index = null): array;
+    
+    /**
      * Returns a new instance with the mapped items.
      *
      * @param callable $mapper
      * @return static
      */
     public function map(callable $mapper): static;
+    
+    /**
+     * Returns a new instance with the groupBy items.
+     *
+     * @param string|callable $groupBy
+     * @param null|callable $groupAs
+     * @param bool $preserveKeys
+     * @return static
+     */
+    public function groupBy(string|callable $groupBy, null|callable $groupAs = null, bool $preserveKeys = true): static;    
 }
