@@ -16,6 +16,8 @@ namespace Tobento\Service\Storage;
 use Tobento\Service\Support\Arrayable;
 use Tobento\Service\Support\Jsonable;
 use Tobento\Service\Iterable\Iter;
+use Tobento\Service\Collection\Arr;
+use ArrayAccess;
 use Generator;
 
 /**
@@ -79,6 +81,18 @@ class Items implements ItemsInterface, Arrayable, Jsonable
         
         return $this->items[$key];
     }
+    
+    /**
+     * Returns the column of the items.
+     *
+     * @param string $column
+     * @param null|string $index
+     * @return array
+     */
+    public function column(string $column, null|string $index = null): array
+    {
+        return array_column($this->items, $column, $index);
+    }
 
     /**
      * Returns a new instance with the mapped items.
@@ -106,11 +120,26 @@ class Items implements ItemsInterface, Arrayable, Jsonable
     public function reindex(callable $indexer): static
     {
         $generator = (static function(iterable $items) use ($indexer): Generator {
-            foreach($items as $key => $item) {
+            foreach($items as $item) {
                 yield $indexer($item) => $item;
             }
         })($this->items);
 
         return new static($generator, $this->itemsCount, $this->action);
+    }
+    
+    /**
+     * Returns a new instance with the groupBy items.
+     *
+     * @param string|callable $groupBy
+     * @param null|callable $groupAs
+     * @param bool $preserveKeys
+     * @return static
+     */
+    public function groupBy(string|callable $groupBy, null|callable $groupAs = null, bool $preserveKeys = true): static
+    {
+        $groups = Arr::groupBy($this->items, $groupBy, $groupAs, $preserveKeys);
+        
+        return new static($groups, null, $this->action);
     }
 }
