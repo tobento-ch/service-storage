@@ -21,7 +21,7 @@
     "prefer-stable": true,
     "require": {
         "php": ">=8.0",
-        "tobento/service-collection": "^1.0",
+        "tobento/service-collection": "^1.0.7",
         "tobento/service-support": "^1.0",
         "tobento/service-filesystem": "^1.0",
         "tobento/service-file-creator": "^1.0",
