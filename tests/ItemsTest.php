@@ -109,6 +109,17 @@ class ItemsTest extends TestCase
         $this->assertSame(['foo' => 'Foo'], $items->first());
     }
     
+    public function testColumnMethod()
+    {
+        $items = new Items([
+            ['name' => 'foo', 'id' => 4],
+            ['name' => 'bar', 'id' => 6],
+        ]);
+        
+        $this->assertSame(['foo', 'bar'], $items->column(column: 'name'));
+        $this->assertSame([4 => 'foo', 6 => 'bar'], $items->column(column: 'name', index: 'id'));
+    }
+    
     public function testFirstMethodIfNoItemsReturnNull()
     {
         $items = new Items();
@@ -146,5 +157,29 @@ class ItemsTest extends TestCase
         
         $this->assertFalse($items === $itemsNew);
         $this->assertsame(['foo', 'bar'], array_keys($itemsNew->all()));
+    }
+    
+    public function testGroupByMethod()
+    {
+        $items = new Items([
+            ['name' => 'bear', 'group' => 'animals'],
+            ['name' => 'audi', 'group' => 'cars'],
+            ['name' => 'ant', 'group' => 'animals'],
+        ]);
+        
+        $this->assertSame(
+            [
+                'animals' => [
+                    0 => ['name' => 'bear', 'group' => 'animals'],
+                    2 => ['name' => 'ant', 'group' => 'animals'],
+                ],
+                'cars' => [
+                    1 => ['name' => 'audi', 'group' => 'cars'],
+                ],
+            ],
+            $items->groupBy(
+                groupBy: 'group',
+            )->all()
+        );
     }
 }
