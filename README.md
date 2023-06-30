@@ -1194,6 +1194,26 @@ var_dump($items->first());
 // array(1) { ["foo"]=> string(3) "Foo" }
 ```
 
+**column**
+
+Returns the column of the items.
+
+```php
+use Tobento\Service\Storage\Items;
+
+$items = new Items([
+    ['name' => 'Foo', 'id' => 3],
+    ['name' => 'Bar', 'id' => 5],
+]);
+
+var_dump($items->column(column: 'name'));
+// array(2) { [0]=> string(3) "Foo" [1]=> string(3) "Bar" }
+
+// with index
+var_dump($items->column(column: 'name', index: 'id'));
+// array(2) { [3]=> string(3) "Foo" [5]=> string(3) "Bar" }
+```
+
 **map**
 
 Map over each of the items returning a new instance.
@@ -1213,6 +1233,63 @@ $itemsNew = $items->map(function(array $item): object {
 
 var_dump($itemsNew->first());
 // object(Tobento\Service\Storage\Item)#8 ...
+```
+
+**groupBy**
+
+Returns a new instance with the grouped items.
+
+```php
+use Tobento\Service\Storage\Items;
+
+$items = new Items([
+    ['name' => 'bear', 'group' => 'animals'],
+    ['name' => 'audi', 'group' => 'cars'],
+    ['name' => 'ant', 'group' => 'animals'],
+]);
+
+$groups = $items->groupBy(groupBy: 'group')->all();
+/*Array
+(
+    [animals] => Array
+        (
+            [0] => Array
+                (
+                    [name] => bear
+                    [group] => animals
+                )
+            [2] => Array
+                (
+                    [name] => ant
+                    [group] => animals
+                )
+        )
+    [cars] => Array
+        (
+            [1] => Array
+                (
+                    [name] => audi
+                    [group] => cars
+                )
+        )
+)*/
+
+// using a callable:
+$groups = $items->groupBy(
+    groupBy: fn ($item) => $item['group'],
+);
+
+// using a callable for grouping:
+$groups = $items->groupBy(
+    groupBy: 'group',
+    groupAs: fn (array $group) => (object) $group,
+);
+
+// without preserving keys:
+$groups = $items->groupBy(
+    groupBy: 'group',
+    preserveKeys: false,
+);
 ```
 
 **reindex**
