@@ -853,26 +853,39 @@ class StorableTablesGrammar extends Grammar
      * @param array $items The items
      * @param array $wheres [[type' => 'Base', 'column' => 'colname', 'value' => 'foo', 'operator' => '=', 'boolean' => 'and'], ...]
      * @return array The items
-     */    
+     */
     protected function applyWheres(array $items, array $wheres): array
     {
         $filtered = $items;
         $whereCount = count($wheres);
         
-        foreach($wheres as $where)
+        foreach($wheres as $i => $where)
         {
-            if ($whereCount > 1 && $where['boolean'] === 'or') {              
-                $filtered = array_unique(array_replace_recursive(
-                    $filtered,
-                    $this->{"where{$where['type']}"}($items, $where)
-                ), SORT_REGULAR);
+            if ($i > 0 && $whereCount > 1 && $where['boolean'] === 'or') {
+
+                $allFiltered = $this->{"where{$where['type']}"}($items, $where);
+                
+                if (!empty($allFiltered)) {
+                    $filtered = array_unique(array_replace_recursive(
+                        $filtered,
+                        $allFiltered
+                    ), SORT_REGULAR);  
+                } else {
+                    $filtered = !empty($filtered) ? $filtered : $allFiltered;
+                }
+
             } else {
+                if ($where['column'] instanceof SubQueryWhere) {
+                    $this->{"where{$where['type']}"}($items, $where);
+                    continue;
+                }
+
                 $filtered = $this->{"where{$where['type']}"}($filtered, $where);
             }
         }
-        
+
         return $filtered;
-    }
+    }    
     
     /**
      * Apply where base clause.
