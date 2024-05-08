@@ -180,7 +180,7 @@ class Table implements TableInterface
     /**
      * Returns the created columns.
      *
-     * @param array<int, string> $columns
+     * @param array<int, string|ColumnInterface> $columns
      * @param null|array<int, string> $columnNames
      * @return array<string, ColumnInterface>
      */    
@@ -191,7 +191,9 @@ class Table implements TableInterface
         
         foreach($columns as $column)
         {
-            $column = $this->columnFactory->createColumn($column);
+            if (! $column instanceof ColumnInterface) {
+                $column = $this->columnFactory->createColumn($column);
+            }
             
             // skip if column is not from same table.
             if (
