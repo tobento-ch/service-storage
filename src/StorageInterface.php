@@ -44,14 +44,14 @@ interface StorageInterface
      * @param string $table
      * @return static $this
      */    
-    public function table(string $table);
+    public function table(string $table): static;
 
     /**
      * Get the table name.
      *
      * @return string
      */    
-    public function getTable();
+    public function getTable(): string;
     
     /**
      * Fetches the table items.
