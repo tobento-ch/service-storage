@@ -411,7 +411,7 @@ class InMemoryStorage extends Storage
             ->limit($this->limit)
             ->update($item, $return);
         
-        $this->grammar = $grammar;
+        $this->grammar = clone $grammar;
         
         if ($this->skipQuery) {
             return new Items(action: 'update');
@@ -484,7 +484,7 @@ class InMemoryStorage extends Storage
             ->limit($this->limit)
             ->delete($return);
         
-        $this->grammar = $grammar;
+        $this->grammar = clone $grammar;
         
         if ($this->skipQuery) {
             return new Items(action: 'delete');
