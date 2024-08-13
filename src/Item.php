@@ -59,4 +59,20 @@ final class Item implements ItemInterface, Arrayable, Jsonable
     {
         return $this->action;
     }
+    
+    /**
+     * __get For array_column object support
+     */
+    public function __get(string $name): mixed
+    {
+        return $this->items[$name];
+    }
+
+    /**
+     * __isset For array_column object support
+     */
+    public function __isset(string $name): bool
+    {
+        return isset($this->items[$name]);
+    }
 }
