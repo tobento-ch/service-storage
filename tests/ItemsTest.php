@@ -120,6 +120,17 @@ class ItemsTest extends TestCase
         $this->assertSame([4 => 'foo', 6 => 'bar'], $items->column(column: 'name', index: 'id'));
     }
     
+    public function testColumnMethodWithItem()
+    {
+        $items = new Items([
+            new Item(['name' => 'foo', 'id' => 4]),
+            new Item(['name' => 'bar', 'id' => 6]),
+        ]);
+        
+        $this->assertSame(['foo', 'bar'], $items->column(column: 'name'));
+        $this->assertSame([4 => 'foo', 6 => 'bar'], $items->column(column: 'name', index: 'id'));
+    }    
+    
     public function testFirstMethodIfNoItemsReturnNull()
     {
         $items = new Items();
