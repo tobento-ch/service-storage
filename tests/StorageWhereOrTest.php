@@ -76,6 +76,42 @@ abstract class StorageWhereOrTest extends TestCase
         $this->assertSame(['foo', 'baz'], $result->all());
     }
     
+    public function testWhereLike()
+    {
+        $insertedItem = $this->storage->table('products')->insert([
+            'title' => 'aa', 'sku' => 'aa1',
+        ]);
+        
+        $insertedItem = $this->storage->table('products')->insert([
+            'title' => 'bb', 'sku' => 'bb2',
+        ]);
+        
+        $insertedItem = $this->storage->table('products')->insert([
+            'title' => 'aa', 'sku' => 'cc3',
+        ]);
+        
+        $insertedItem = $this->storage->table('products')->insert([
+            'title' => 'cc', 'sku' => 'bb4',
+        ]);
+        
+        $insertedItem = $this->storage->table('products')->insert([
+            'title' => 'cc', 'sku' => 'dd5',
+        ]);
+        
+        $result = $this->storage
+            ->table('products')
+            //->where('sku', 'like', '%aa%')
+            //->orWhere('title', 'like', '%bb%')
+            ->where(function ($q) {
+                $q->where('title', 'like', '%aa%');
+                $q->orWhere('sku', 'like', '%bb%');
+            })
+            ->order('id')
+            ->column('sku', 'id');
+        
+        $this->assertSame([1 => 'aa1', 2 => 'bb2', 3 => 'cc3', 4 => 'bb4'], $result->all());
+    }
+    
     public function testWhereOrWhereWithNotFound()
     {
         $insertedItem = $this->storage->table('products')->insert([
