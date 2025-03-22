@@ -107,8 +107,6 @@ class InMemoryStorage extends Storage
         }
         
         unset($this->items[$table->name()]);
-        
-        $this->tables()->removeTable($table->name());
     }
     
     /**

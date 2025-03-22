@@ -116,8 +116,6 @@ class PdoMariaDbStorage extends Storage
             statement: 'DROP TABLE IF EXISTS `'.$table->name().'`',
             bindings: []
         );
-        
-        $this->tables()->removeTable($table->name());
     }
     
     /**

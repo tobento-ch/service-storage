@@ -113,7 +113,5 @@ class JsonFileStorage extends InMemoryStorage
         }
         
         (new JsonFile($this->dir.$table->name().'.json'))->delete();
-        
-        $this->tables()->removeTable($table->name());
     }
 }
