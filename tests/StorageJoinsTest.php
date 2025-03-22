@@ -98,7 +98,7 @@ abstract class StorageJoinsTest extends TestCase
                 0 => [
                     'id' => 1,
                     'sku' => 'paper',
-                    'price' => 12,
+                    'price' => '12.00',
                     'product_id' => 1,
                     'language_id' => 1,
                     'title' => 'Papier',
