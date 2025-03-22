@@ -137,14 +137,14 @@ abstract class StorageMiscTest extends TestCase
         $this->storage->deleteTable('products');
         
         try {
-            // will fail as table was deleted.
-            $deleted = false;
-            $this->storage->table('products')->count();
-        } catch (GrammarException $e) {
-            $deleted = true;
+            // might fail as table was deleted.
+            $count = $this->storage->table('products')->count();
+        } catch (GrammarException|\PDOException $e) {
+            $count = 0;
         }
         
-        $this->assertSame(null, $this->storage->tables()->getTable('products'));
-        $this->assertTrue($deleted);
+        // table should not be deleted, e.g. for remigration
+        $this->assertNotNull($this->storage->tables()->getTable('products'));
+        $this->assertSame(0, $count);
     }
 }
