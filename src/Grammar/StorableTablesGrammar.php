@@ -869,23 +869,17 @@ class StorableTablesGrammar extends Grammar
                     $filtered = array_unique(array_replace_recursive(
                         $filtered,
                         $allFiltered
-                    ), SORT_REGULAR);  
+                    ), SORT_REGULAR);
                 } else {
                     $filtered = !empty($filtered) ? $filtered : $allFiltered;
                 }
-
             } else {
-                if ($where['column'] instanceof SubQueryWhere) {
-                    $this->{"where{$where['type']}"}($items, $where);
-                    continue;
-                }
-
                 $filtered = $this->{"where{$where['type']}"}($filtered, $where);
             }
         }
 
         return $filtered;
-    }    
+    }
     
     /**
      * Apply where base clause.
