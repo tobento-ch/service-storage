@@ -85,6 +85,14 @@ interface StorageInterface
      * @return static $this
      */    
     public function select(string ...$columns): static;
+    
+    /**
+     * Sets a RAW select expression.
+     *
+     * @param string $expression
+     * @return static $this
+     */
+    public function selectRaw(string $expression): static;
 
     /**
      * Get a single item by id.
@@ -691,6 +699,13 @@ interface StorageInterface
      * @return bool
      */
     public function supportsReturningItems(string $method): bool;
+    
+    /**
+     * Returns true if the storage supports raw statements, otherwise false.
+     *
+     * @return bool
+     */
+    public function supportsRawStatements(): bool;
     
     /**
      * Clear query
