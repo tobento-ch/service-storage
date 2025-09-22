@@ -192,7 +192,18 @@ abstract class Storage implements StorageInterface
     {
         $this->select = $columns;
         return $this;
-    }  
+    }
+    
+    /**
+     * Sets a RAW select expression.
+     *
+     * @param string $expression
+     * @return static $this
+     */
+    public function selectRaw(string $expression): static
+    {
+        throw new UnsupportedStorageException('selectRaw is not supported!');
+    }
 
     /**
      * Get a single item by id.
