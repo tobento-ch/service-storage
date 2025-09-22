@@ -24,7 +24,7 @@ use PDO;
 /**
  * PdoMariaDbStorage
  */
-class PdoMariaDbStorage extends Storage
+class PdoMariaDbStorage extends Storage implements PdoAwareInterface
 {
     /**
      * @var int
@@ -116,6 +116,18 @@ class PdoMariaDbStorage extends Storage
             statement: 'DROP TABLE IF EXISTS `'.$table->name().'`',
             bindings: []
         );
+    }
+    
+    /**
+     * Sets a RAW select expression.
+     *
+     * @param string $expression
+     * @return static $this
+     */
+    public function selectRaw(string $expression): static
+    {
+        $this->select = $expression;
+        return $this;
     }
     
     /**
@@ -281,28 +293,6 @@ class PdoMariaDbStorage extends Storage
         $this->select = 'count(*) as aggregate';
         $item = $this->first();
         return (int) ($item['aggregate'] ?? 0);
-    }
-
-    /**
-     * Get the raw statement result.
-     *
-     * @param string $statement 'SELECT title From products WHERE status = ?'
-     * @param array $bindings Any bindings. ['active']
-     * @param string $mode The mode such as 'first' or 'all'
-     * @return mixed
-     */    
-    public function selectRaw(string $statement, array $bindings = [], string $mode = 'all'): mixed
-    {
-        $pdoStatement = $this->execute(
-            statement: $statement,
-            bindings: $bindings
-        );
-        
-        if ($mode === 'all') {
-            return $pdoStatement->fetchAll(PDO::FETCH_ASSOC);
-        }
-
-        return $pdoStatement->fetch(PDO::FETCH_ASSOC);
     }
 
     /**
@@ -577,6 +567,16 @@ class PdoMariaDbStorage extends Storage
             return false;
         }
         
+        return true;
+    }
+    
+    /**
+     * Returns true if the storage supports raw statements, otherwise false.
+     *
+     * @return bool
+     */
+    public function supportsRawStatements(): bool
+    {
         return true;
     }
 

@@ -290,30 +290,6 @@ class InMemoryStorage extends Storage
     public function count(): int
     {
         return $this->get()->count();
-    }  
-
-    /**
-     * Get the raw statement result.
-     *
-     * @param string $statement 'SELECT title From products WHERE status = ?'
-     * @param array $bindings Any bindings. ['active']
-     * @param string $mode The mode such as 'first' or 'all'
-     * @return mixed
-     */    
-    public function selectRaw(string $statement, array $bindings = [], string $mode = 'all'): mixed
-    {
-        throw new UnsupportedStorageException('selectRaw is not supported!');
-    }
-    
-    /**
-     * The raw expression to add to the select()
-     *
-     * @param string $expression The expression to add.
-     * @return static $this
-     */    
-    public function selectAddRaw(string $expression): static
-    {
-        throw new UnsupportedStorageException('selectAddRaw is not supported!');
     }
 
     /**
@@ -562,6 +538,16 @@ class InMemoryStorage extends Storage
     {
         // supports all methods.
         return true;
+    }
+    
+    /**
+     * Returns true if the storage supports raw statements, otherwise false.
+     *
+     * @return bool
+     */
+    public function supportsRawStatements(): bool
+    {
+        return false;
     }
 
     /**
