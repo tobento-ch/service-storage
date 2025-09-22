@@ -12,6 +12,7 @@ The Storage Service comes with a query builder for storing and fetching items.
     - [Storages](#storages)
         - [Pdo MariaDb Storage](#pdo-mariadb-storage)
         - [Pdo MySql Storage](#pdo-mysql-storage)
+        - [Pdo Sqlite Storage](#pdo-sqlite-storage)
         - [Json File Storage](#json-file-storage)
         - [In Memory Storage](#in-memory-storage)
         - [Storage Comparison](#storage-comparison)
@@ -32,6 +33,7 @@ The Storage Service comes with a query builder for storing and fetching items.
             - [Json File Items](#json-file-items)
         - [Update Statements](#update-statements)
         - [Delete Statements](#delete-statements)
+        - [Raw Statements](#raw-statements)
         - [Transactions](#transactions)
         - [Chunking Results and Inserts](#chunking-results-and-inserts)
         - [Miscellaneous](#miscellaneous)
@@ -104,6 +106,7 @@ var_dump($item instanceof ItemInterface);
 ```php
 use Tobento\Service\Database\PdoDatabaseFactory;
 use Tobento\Service\Storage\Tables\Tables;
+use Tobento\Service\Storage\PdoAwareInterface;
 use Tobento\Service\Storage\PdoMariaDbStorage;
 use Tobento\Service\Storage\StorageInterface;
 use PDO;
@@ -129,6 +132,9 @@ $storage = new PdoMariaDbStorage($pdo, $tables);
 
 var_dump($storage instanceof StorageInterface);
 // bool(true)
+
+var_dump($storage instanceof PdoAwareInterface);
+// bool(true)
 ```
 
 ### Pdo MySql Storage
@@ -136,6 +142,7 @@ var_dump($storage instanceof StorageInterface);
 ```php
 use Tobento\Service\Database\PdoDatabaseFactory;
 use Tobento\Service\Storage\Tables\Tables;
+use Tobento\Service\Storage\PdoAwareInterface;
 use Tobento\Service\Storage\PdoMySqlStorage;
 use Tobento\Service\Storage\StorageInterface;
 use PDO;
@@ -161,7 +168,14 @@ $storage = new PdoMySqlStorage($pdo, $tables);
 
 var_dump($storage instanceof StorageInterface);
 // bool(true)
+
+var_dump($storage instanceof PdoAwareInterface);
+// bool(true)
 ```
+
+### Pdo Sqlite Storage
+
+In progress ...
 
 ### Json File Storage
 
@@ -864,6 +878,63 @@ $deletedItems = $storage->table('products')
 
 var_dump($deletedItems->all());
 // array(0) { }
+```
+
+### Raw Statements
+
+Raw statements are only supported by the following storages:
+
+* [Pdo MariaDb Storage](#pdo-mariadb-storage)
+* [Pdo MySql Storage](#pdo-mysql-storage)
+* [Pdo Sqlite Storage](#pdo-sqlite-storage)
+
+You may use ```supportsRawStatements``` method to check if the storage supports raw stements:
+
+```php
+var_dump($storage->supportsRawStatements());
+// bool(true)
+```
+
+> [!WARNING]  
+> Raw statements will be injected into the query as strings, so you should be extremely careful to avoid creating SQL injection vulnerabilities.
+
+**selectRaw**
+
+```php
+// you will need to add the products_counts column as to be verified:
+$storage->tables()->add('products', ['status', 'products_count'], 'id');
+
+$products = $storage->table('products')
+    ->selectRaw('count(*) as products_count, status')
+    ->where('status', '=', 'active')
+    ->groupBy('status')
+    ->get();
+```
+
+**whereRaw**
+
+```php
+$products = $storage->table('products')
+    ->whereRaw('price > ?', [20])
+    ->get();
+```
+
+**Using The PdoDatabase**
+
+You may consider to install the [Service Database](https://github.com/tobento-ch/service-database) and use [Pdo Database](https://github.com/tobento-ch/service-database#pdo-database) if you need full control:
+
+```php
+use Tobento\Service\Database\PdoDatabase;
+use Tobento\Service\Storage\PdoAwareInterface;
+
+if ($storage instanceof PdoAwareInterface) {
+    $database = new PdoDatabase(pdo: $storage->pdo(), name: 'some-name');
+
+    $products = $database->execute(
+        statement: 'SELECT title FROM products WHERE color = ?',
+        bindings: ['blue']
+    )->fetchAll();
+}
 ```
 
 ### Transactions
