@@ -59,5 +59,10 @@ class StorageTest extends \Tobento\Service\Storage\Test\StorageTest
             ],
             $items->all()
         );        
-    }   
+    }
+    
+    public function testSupportsRawStatementsMethod()
+    {
+        $this->assertFalse($this->storage->supportsRawStatements());
+    }
 }

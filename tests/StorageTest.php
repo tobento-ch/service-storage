@@ -81,6 +81,11 @@ abstract class StorageTest extends TestCase
         //$this->storage = null;
     }
     
+    public function testSupportsRawStatementsMethod()
+    {
+        $this->assertTrue($this->storage->supportsRawStatements());
+    }
+    
     public function testNewMethod()
     {        
         $storage = $this->storage->new();
@@ -688,5 +693,5 @@ abstract class StorageTest extends TestCase
             1,
             $value
         );
-    }    
+    }
 }

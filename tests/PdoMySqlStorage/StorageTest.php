@@ -14,6 +14,7 @@ declare(strict_types=1);
 namespace Tobento\Service\Storage\Test\PdoMySqlStorage;
 
 use PHPUnit\Framework\TestCase;
+use Tobento\Service\Storage\PdoAwareInterface;
 use Tobento\Service\Storage\PdoMySqlStorage;
 use Tobento\Service\Database\PdoDatabase;
 use Tobento\Service\Database\Processor\PdoMySqlProcessor;
@@ -69,5 +70,10 @@ class StorageTest extends \Tobento\Service\Storage\Test\StorageTest
         $processor = new PdoMySqlProcessor();
         
         $processor->process($table, $this->database);
+    }
+    
+    public function testThatImplementsPdoAwareInterface()
+    {
+        $this->assertInstanceof(PdoAwareInterface::class, $this->storage);
     }
 }

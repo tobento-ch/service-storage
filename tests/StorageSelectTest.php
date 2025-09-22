@@ -260,7 +260,7 @@ abstract class StorageSelectTest extends TestCase
     }    
         
     public function testSelectFirstMethod()
-    {        
+    {
         $items = $this->storage->table('products')->select('sku')->first();
         
         $this->assertEquals(
@@ -270,12 +270,22 @@ abstract class StorageSelectTest extends TestCase
     }
 
     public function testSelectFindMethod()
-    {        
+    {
         $items = $this->storage->table('products')->select('sku')->find(5);
         
         $this->assertEquals(
             ['sku' => 'scissors'],
             $items->all()
         );        
-    }   
+    }
+    
+    public function testSelectRawMethod()
+    {
+        $items = $this->storage->table('products')->selectRaw('sku, title')->first();
+        
+        $this->assertEquals(
+            ['sku' => 'paper', 'title' => 'Blatt'],
+            $items->all()
+        );
+    }
 }

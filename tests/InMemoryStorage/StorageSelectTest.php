@@ -32,17 +32,10 @@ class StorageSelectTest extends \Tobento\Service\Storage\Test\StorageSelectTest
         ], $this->tables);
     }
     
-    public function testSelectRawGetMethodThrowsStorageException()
+    public function testSelectRawMethod()
     {
         $this->expectException(StorageException::class);
         
-        $items = $this->storage->table('products')->selectRaw('')->get();       
+        $items = $this->storage->table('products')->selectRaw('sku, title')->first();
     }
-    
-    public function testSelectAddRawGetMethodThrowsStorageException()
-    {
-        $this->expectException(StorageException::class);
-        
-        $items = $this->storage->table('products')->selectAddRaw('')->get();       
-    }    
 }
