@@ -19,7 +19,8 @@ use IteratorAggregate;
 use Countable;
 
 /**
- * ItemsInterface
+ * @extends ArrayAccess<string, mixed>
+ * @extends IteratorAggregate<array-key, mixed>
  */
 interface ItemsInterface extends ArrayAccess, Countable, IteratorAggregate
 {
