@@ -21,7 +21,7 @@ use Tobento\Service\Filesystem\Dir;
 /**
  * StorageSelectTest
  */
-class StorageSelectTest extends \Tobento\Service\Storage\Test\StorageSelectTest
+class StorageSelectTest extends \Tobento\Service\Storage\Test\StorageSelect
 {
     public function setUp(): void
     {

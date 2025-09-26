@@ -19,7 +19,7 @@ use Tobento\Service\Storage\InMemoryStorage;
 /**
  * StorageChunkTest
  */
-class StorageChunkTest extends \Tobento\Service\Storage\Test\StorageChunkTest
+class StorageChunkTest extends \Tobento\Service\Storage\Test\StorageChunk
 {
     public function setUp(): void
     {

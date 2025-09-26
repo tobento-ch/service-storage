@@ -19,7 +19,7 @@ use Tobento\Service\Storage\InMemoryStorage;
 /**
  * StorageSpecialCharTest
  */
-class StorageSpecialCharTest extends \Tobento\Service\Storage\Test\StorageSpecialCharTest
+class StorageSpecialCharTest extends \Tobento\Service\Storage\Test\StorageSpecialChar
 {
     public function setUp(): void
     {

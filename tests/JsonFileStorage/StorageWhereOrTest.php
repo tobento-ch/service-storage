@@ -17,7 +17,7 @@ use PHPUnit\Framework\TestCase;
 use Tobento\Service\Storage\JsonFileStorage;
 use Tobento\Service\Filesystem\Dir;
 
-class StorageWhereOrTest extends \Tobento\Service\Storage\Test\StorageWhereOrTest
+class StorageWhereOrTest extends \Tobento\Service\Storage\Test\StorageWhereOr
 {
     public function setUp(): void
     {

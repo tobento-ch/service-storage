@@ -19,7 +19,7 @@ use Tobento\Service\Storage\InMemoryStorage;
 /**
  * StorageJsonContainsAndLengthTest
  */
-class StorageJsonContainsAndLengthTest extends \Tobento\Service\Storage\Test\StorageJsonContainsAndLengthTest
+class StorageJsonContainsAndLengthTest extends \Tobento\Service\Storage\Test\StorageJsonContainsAndLength
 {
     public function setUp(): void
     {

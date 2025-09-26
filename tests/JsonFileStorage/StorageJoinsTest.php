@@ -20,7 +20,7 @@ use Tobento\Service\Filesystem\Dir;
 /**
  * StorageJoinsTest
  */
-class StorageJoinsTest extends \Tobento\Service\Storage\Test\StorageJoinsTest
+class StorageJoinsTest extends \Tobento\Service\Storage\Test\StorageJoins
 {
     public function setUp(): void
     {

@@ -23,7 +23,7 @@ use PDO;
 /**
  * StorageChunkTest
  */
-class StorageChunkTest extends \Tobento\Service\Storage\Test\StorageChunkTest
+class StorageChunkTest extends \Tobento\Service\Storage\Test\StorageChunk
 {
     protected null|PdoDatabase $database = null;
     
@@ -58,8 +58,12 @@ class StorageChunkTest extends \Tobento\Service\Storage\Test\StorageChunkTest
         $this->dropTable($this->tableProducts);
     }
     
-    protected function dropTable(Table $table): void
+    protected function dropTable(null|Table $table): void
     {
+        if (is_null($table) || is_null($this->database)) {
+            return;
+        }
+        
         $table->dropTable();
         
         $processor = new PdoMySqlProcessor();

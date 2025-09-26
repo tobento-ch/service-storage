@@ -20,7 +20,7 @@ use Tobento\Service\Database\Processor\PdoMySqlProcessor;
 use Tobento\Service\Database\Schema\Table;
 use PDO;
 
-class StorageWhereOrTest extends \Tobento\Service\Storage\Test\StorageWhereOrTest
+class StorageWhereOrTest extends \Tobento\Service\Storage\Test\StorageWhereOr
 {
     protected null|PdoDatabase $database = null;
     
@@ -55,8 +55,12 @@ class StorageWhereOrTest extends \Tobento\Service\Storage\Test\StorageWhereOrTes
         $this->dropTable($this->tableProducts);
     }
     
-    protected function dropTable(Table $table): void
+    protected function dropTable(null|Table $table): void
     {
+        if (is_null($table) || is_null($this->database)) {
+            return;
+        }
+        
         $table->dropTable();
         
         $processor = new PdoMySqlProcessor();

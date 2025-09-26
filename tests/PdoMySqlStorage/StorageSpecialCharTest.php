@@ -23,7 +23,7 @@ use PDO;
 /**
  * StorageSpecialCharTest
  */
-class StorageSpecialCharTest extends \Tobento\Service\Storage\Test\StorageSpecialCharTest
+class StorageSpecialCharTest extends \Tobento\Service\Storage\Test\StorageSpecialChar
 {
     protected null|PdoDatabase $database = null;
     
@@ -58,8 +58,12 @@ class StorageSpecialCharTest extends \Tobento\Service\Storage\Test\StorageSpecia
         $this->dropTable($this->tableProducts);
     }
     
-    protected function dropTable(Table $table): void
+    protected function dropTable(null|Table $table): void
     {
+        if (is_null($table) || is_null($this->database)) {
+            return;
+        }
+        
         $table->dropTable();
         
         $processor = new PdoMySqlProcessor();

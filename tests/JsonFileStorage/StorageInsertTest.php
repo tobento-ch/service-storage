@@ -20,7 +20,7 @@ use Tobento\Service\Filesystem\Dir;
 /**
  * StorageInsertTest
  */
-class StorageInsertTest extends \Tobento\Service\Storage\Test\StorageInsertTest
+class StorageInsertTest extends \Tobento\Service\Storage\Test\StorageInsert
 {
     public function setUp(): void
     {

@@ -20,7 +20,7 @@ use Tobento\Service\Filesystem\Dir;
 /**
  * StorageJsonGroupByTest
  */
-class StorageJsonGroupByTest extends \Tobento\Service\Storage\Test\StorageJsonGroupByTest
+class StorageJsonGroupByTest extends \Tobento\Service\Storage\Test\StorageJsonGroupBy
 {
     public function setUp(): void
     {

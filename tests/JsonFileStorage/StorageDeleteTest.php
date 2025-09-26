@@ -20,7 +20,7 @@ use Tobento\Service\Filesystem\Dir;
 /**
  * StorageDeleteTest
  */
-class StorageDeleteTest extends \Tobento\Service\Storage\Test\StorageDeleteTest
+class StorageDeleteTest extends \Tobento\Service\Storage\Test\StorageDelete
 {
     public function setUp(): void
     {

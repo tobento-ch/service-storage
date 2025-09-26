@@ -23,7 +23,7 @@ use PDO;
 /**
  * StorageInsertTest
  */
-class StorageInsertTest extends \Tobento\Service\Storage\Test\StorageInsertTest
+class StorageInsertTest extends \Tobento\Service\Storage\Test\StorageInsert
 {
     protected null|PdoDatabase $database = null;
     
@@ -58,12 +58,16 @@ class StorageInsertTest extends \Tobento\Service\Storage\Test\StorageInsertTest
         $this->dropTable($this->tableProducts);
     }
     
-    protected function dropTable(Table $table): void
+    protected function dropTable(null|Table $table): void
     {
+        if (is_null($table) || is_null($this->database)) {
+            return;
+        }
+        
         $table->dropTable();
         
         $processor = new PdoMySqlProcessor();
         
         $processor->process($table, $this->database);
-    } 
+    }
 }

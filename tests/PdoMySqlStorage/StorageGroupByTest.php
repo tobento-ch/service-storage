@@ -23,7 +23,7 @@ use PDO;
 /**
  * StorageGroupByTest
  */
-class StorageGroupByTest extends \Tobento\Service\Storage\Test\StorageGroupByTest
+class StorageGroupByTest extends \Tobento\Service\Storage\Test\StorageGroupBy
 {
     protected null|PdoDatabase $database = null;
     
@@ -62,8 +62,12 @@ class StorageGroupByTest extends \Tobento\Service\Storage\Test\StorageGroupByTes
         $this->dropTable($this->tableProductsLg);
     }
     
-    protected function dropTable(Table $table): void
+    protected function dropTable(null|Table $table): void
     {
+        if (is_null($table) || is_null($this->database)) {
+            return;
+        }
+        
         $table->dropTable();
         
         $processor = new PdoMySqlProcessor();

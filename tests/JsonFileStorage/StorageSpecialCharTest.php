@@ -20,7 +20,7 @@ use Tobento\Service\Filesystem\Dir;
 /**
  * StorageSpecialCharTest
  */
-class StorageSpecialCharTest extends \Tobento\Service\Storage\Test\StorageSpecialCharTest
+class StorageSpecialCharTest extends \Tobento\Service\Storage\Test\StorageSpecialChar
 {
     public function setUp(): void
     {

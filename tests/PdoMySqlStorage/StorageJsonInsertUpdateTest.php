@@ -23,7 +23,7 @@ use PDO;
 /**
  * StorageJsonInsertUpdateTest
  */
-class StorageJsonInsertUpdateTest extends \Tobento\Service\Storage\Test\StorageJsonInsertUpdateTest
+class StorageJsonInsertUpdateTest extends \Tobento\Service\Storage\Test\StorageJsonInsertUpdate
 {
     protected null|PdoDatabase $database = null;
     
@@ -62,8 +62,12 @@ class StorageJsonInsertUpdateTest extends \Tobento\Service\Storage\Test\StorageJ
         $this->dropTable($this->tableProductsLg);
     }
     
-    protected function dropTable(Table $table): void
+    protected function dropTable(null|Table $table): void
     {
+        if (is_null($table) || is_null($this->database)) {
+            return;
+        }
+        
         $table->dropTable();
         
         $processor = new PdoMySqlProcessor();

@@ -19,7 +19,7 @@ use Tobento\Service\Storage\InMemoryStorage;
 /**
  * StorageJsonTest
  */
-class StorageJsonTest extends \Tobento\Service\Storage\Test\StorageJsonTest
+class StorageJsonTest extends \Tobento\Service\Storage\Test\StorageJson
 {
     public function setUp(): void
     {

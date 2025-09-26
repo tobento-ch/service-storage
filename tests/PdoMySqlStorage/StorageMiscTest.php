@@ -23,7 +23,7 @@ use PDO;
 /**
  * StorageMiscTest
  */
-class StorageMiscTest extends \Tobento\Service\Storage\Test\StorageMiscTest
+class StorageMiscTest extends \Tobento\Service\Storage\Test\StorageMisc
 {
     protected null|PdoDatabase $database = null;
     
@@ -62,8 +62,12 @@ class StorageMiscTest extends \Tobento\Service\Storage\Test\StorageMiscTest
         $this->dropTable($this->tableProductsLg);
     }
     
-    protected function dropTable(Table $table): void
+    protected function dropTable(null|Table $table): void
     {
+        if (is_null($table) || is_null($this->database)) {
+            return;
+        }
+        
         $table->dropTable();
         
         $processor = new PdoMySqlProcessor();

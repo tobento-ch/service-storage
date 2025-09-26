@@ -23,7 +23,7 @@ use PDO;
 /**
  * StorageJsonGroupByTest
  */
-class StorageJsonGroupByTest extends \Tobento\Service\Storage\Test\StorageJsonGroupByTest
+class StorageJsonGroupByTest extends \Tobento\Service\Storage\Test\StorageJsonGroupBy
 {
     protected null|PdoDatabase $database = null;
     
@@ -62,8 +62,12 @@ class StorageJsonGroupByTest extends \Tobento\Service\Storage\Test\StorageJsonGr
         $this->dropTable($this->tableProductsLg);
     }
     
-    protected function dropTable(Table $table): void
+    protected function dropTable(null|Table $table): void
     {
+        if (is_null($table) || is_null($this->database)) {
+            return;
+        }
+        
         $table->dropTable();
         
         $processor = new PdoMySqlProcessor();

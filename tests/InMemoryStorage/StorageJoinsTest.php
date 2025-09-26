@@ -19,7 +19,7 @@ use Tobento\Service\Storage\InMemoryStorage;
 /**
  * StorageJoinsTest
  */
-class StorageJoinsTest extends \Tobento\Service\Storage\Test\StorageJoinsTest
+class StorageJoinsTest extends \Tobento\Service\Storage\Test\StorageJoins
 {
     public function setUp(): void
     {

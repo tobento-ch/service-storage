@@ -23,7 +23,7 @@ use PDO;
 /**
  * StorageDeleteTest
  */
-class StorageDeleteTest extends \Tobento\Service\Storage\Test\StorageDeleteTest
+class StorageDeleteTest extends \Tobento\Service\Storage\Test\StorageDelete
 {
     protected null|PdoDatabase $database = null;
     
@@ -58,8 +58,12 @@ class StorageDeleteTest extends \Tobento\Service\Storage\Test\StorageDeleteTest
         $this->dropTable($this->tableProducts);
     }
     
-    protected function dropTable(Table $table): void
+    protected function dropTable(null|Table $table): void
     {
+        if (is_null($table) || is_null($this->database)) {
+            return;
+        }
+        
         $table->dropTable();
         
         $processor = new PdoMySqlProcessor();

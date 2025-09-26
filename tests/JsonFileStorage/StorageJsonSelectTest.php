@@ -20,7 +20,7 @@ use Tobento\Service\Filesystem\Dir;
 /**
  * StorageJsonSelectTest
  */
-class StorageJsonSelectTest extends \Tobento\Service\Storage\Test\StorageJsonSelectTest
+class StorageJsonSelectTest extends \Tobento\Service\Storage\Test\StorageJsonSelect
 {
     public function setUp(): void
     {

@@ -19,7 +19,7 @@ use Tobento\Service\Storage\InMemoryStorage;
 /**
  * StorageJsonGroupByTest
  */
-class StorageJsonGroupByTest extends \Tobento\Service\Storage\Test\StorageJsonGroupByTest
+class StorageJsonGroupByTest extends \Tobento\Service\Storage\Test\StorageJsonGroupBy
 {
     public function setUp(): void
     {

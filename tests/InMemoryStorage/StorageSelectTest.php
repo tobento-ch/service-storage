@@ -20,7 +20,7 @@ use Tobento\Service\Storage\StorageException;
 /**
  * StorageSelectTest
  */
-class StorageSelectTest extends \Tobento\Service\Storage\Test\StorageSelectTest
+class StorageSelectTest extends \Tobento\Service\Storage\Test\StorageSelect
 {
     public function setUp(): void
     {

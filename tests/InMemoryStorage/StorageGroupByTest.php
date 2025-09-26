@@ -19,7 +19,7 @@ use Tobento\Service\Storage\InMemoryStorage;
 /**
  * StorageGroupByTest
  */
-class StorageGroupByTest extends \Tobento\Service\Storage\Test\StorageGroupByTest
+class StorageGroupByTest extends \Tobento\Service\Storage\Test\StorageGroupBy
 {
     public function setUp(): void
     {

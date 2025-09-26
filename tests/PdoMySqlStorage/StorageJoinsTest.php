@@ -23,7 +23,7 @@ use PDO;
 /**
  * StorageJoinsTest
  */
-class StorageJoinsTest extends \Tobento\Service\Storage\Test\StorageJoinsTest
+class StorageJoinsTest extends \Tobento\Service\Storage\Test\StorageJoins
 {
     protected null|PdoDatabase $database = null;
     
@@ -62,8 +62,12 @@ class StorageJoinsTest extends \Tobento\Service\Storage\Test\StorageJoinsTest
         $this->dropTable($this->tableProductsLg);
     }
     
-    protected function dropTable(Table $table): void
+    protected function dropTable(null|Table $table): void
     {
+        if (is_null($table) || is_null($this->database)) {
+            return;
+        }
+        
         $table->dropTable();
         
         $processor = new PdoMySqlProcessor();

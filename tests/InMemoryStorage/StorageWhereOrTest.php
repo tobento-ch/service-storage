@@ -16,7 +16,7 @@ namespace Tobento\Service\Storage\Test\InMemoryStorage;
 use PHPUnit\Framework\TestCase;
 use Tobento\Service\Storage\InMemoryStorage;
 
-class StorageWhereOrTest extends \Tobento\Service\Storage\Test\StorageWhereOrTest
+class StorageWhereOrTest extends \Tobento\Service\Storage\Test\StorageWhereOr
 {
     public function setUp(): void
     {

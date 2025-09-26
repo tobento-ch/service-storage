@@ -19,7 +19,7 @@ use Tobento\Service\Storage\InMemoryStorage;
 /**
  * StorageJsonSelectTest
  */
-class StorageJsonSelectTest extends \Tobento\Service\Storage\Test\StorageJsonSelectTest
+class StorageJsonSelectTest extends \Tobento\Service\Storage\Test\StorageJsonSelect
 {
     public function setUp(): void
     {

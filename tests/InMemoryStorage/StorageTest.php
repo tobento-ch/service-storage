@@ -19,7 +19,7 @@ use Tobento\Service\Storage\InMemoryStorage;
 /**
  * StorageTest
  */
-class StorageTest extends \Tobento\Service\Storage\Test\StorageTest
+class StorageTest extends \Tobento\Service\Storage\Test\Storage
 {
     public function setUp(): void
     {

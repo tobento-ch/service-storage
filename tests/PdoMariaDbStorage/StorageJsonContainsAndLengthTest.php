@@ -23,7 +23,7 @@ use PDO;
 /**
  * StorageJsonContainsAndLengthTest
  */
-class StorageJsonContainsAndLengthTest extends \Tobento\Service\Storage\Test\StorageJsonContainsAndLengthTest
+class StorageJsonContainsAndLengthTest extends \Tobento\Service\Storage\Test\StorageJsonContainsAndLength
 {
     protected null|PdoDatabase $database = null;
     
@@ -62,8 +62,12 @@ class StorageJsonContainsAndLengthTest extends \Tobento\Service\Storage\Test\Sto
         $this->dropTable($this->tableProductsLg);
     }
     
-    protected function dropTable(Table $table): void
+    protected function dropTable(null|Table $table): void
     {
+        if (is_null($table) || is_null($this->database)) {
+            return;
+        }
+        
         $table->dropTable();
         
         $processor = new PdoMySqlProcessor();
