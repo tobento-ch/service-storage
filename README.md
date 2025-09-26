@@ -54,7 +54,7 @@ composer require tobento/service-storage
 
 ## Requirements
 
-- PHP 8.0 or greater
+- PHP 8.4 or greater
 
 ## Highlights
 
@@ -111,7 +111,7 @@ use Tobento\Service\Storage\PdoMariaDbStorage;
 use Tobento\Service\Storage\StorageInterface;
 use PDO;
 
-$pdo = (new PdoDatabaseFactory())->createPdo(
+$pdo = new PdoDatabaseFactory()->createPdo(
     name: 'mysql',
     config: [
         'dsn' => 'mysql:host=localhost;dbname=db_name',
@@ -147,7 +147,7 @@ use Tobento\Service\Storage\PdoMySqlStorage;
 use Tobento\Service\Storage\StorageInterface;
 use PDO;
 
-$pdo = (new PdoDatabaseFactory())->createPdo(
+$pdo = new PdoDatabaseFactory()->createPdo(
     name: 'mysql',
     config: [
         'dsn' => 'mysql:host=localhost;dbname=db_name',

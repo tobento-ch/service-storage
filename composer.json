@@ -1,5 +1,6 @@
 {
     "name": "tobento/service-storage",
+    "version": "2.0",
     "type": "library",
     "description": "A storage interface for storing and fetching items.",
     "keywords": [
@@ -20,17 +21,17 @@
     "minimum-stability": "dev",
     "prefer-stable": true,
     "require": {
-        "php": ">=8.0",
-        "tobento/service-collection": "^1.0.7",
-        "tobento/service-support": "^1.0",
-        "tobento/service-filesystem": "^1.0",
-        "tobento/service-file-creator": "^1.0",
-        "tobento/service-iterable": "^1.0"
+        "php": ">=8.4",
+        "tobento/service-collection": "^2.0",
+        "tobento/service-support": "^2.0",
+        "tobento/service-filesystem": "^2.0",
+        "tobento/service-file-creator": "^2.0",
+        "tobento/service-iterable": "^2.0"
     },
     "require-dev": {
-        "phpunit/phpunit": "^9.5",
-        "vimeo/psalm": "^4.0",
-        "tobento/service-database": "^1.0"
+        "phpunit/phpunit": "^12.3",
+        "vimeo/psalm": "^6.13",
+        "tobento/service-database": "^2.0"
     },    
     "autoload": {
         "psr-4": {
