@@ -472,7 +472,7 @@ abstract class Storage implements StorageInterface
      * Where IN clause
      *
      * @param string|Closure $column The column name. 
-     * @param array $value The values
+     * @param mixed $value The values
      * @return static $this
      */
     public function whereIn(string|Closure $column, mixed $value = null): static
@@ -662,8 +662,6 @@ abstract class Storage implements StorageInterface
      * Where Json contains key or clause
      *
      * @param string $column The column name.
-     * @param string $boolean
-     * @param bool $not
      * @return static $this
      */
     public function orWhereJsonContainsKey(
