@@ -548,7 +548,7 @@ class StorableTablesGrammar extends Grammar
         // Use the verified columns instead of ['*'].
         $this->select = empty($this->select) ? $this->queryTables->getColumns() : $this->select;
         
-        return $this->select;    
+        return is_array($this->select) ? $this->select : [];    
     }
     
     /**
