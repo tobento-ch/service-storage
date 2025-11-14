@@ -160,7 +160,26 @@ abstract class StorageJsonContainsAndLength extends TestCase
         $this->assertEquals(
             [3 => $this->products[3], 5 => $this->products[5], 6 => $this->products[6]],
             $items->all()
-        );       
+        );
+        
+        $items = $this->storage->table('products')->index('id')
+            ->orWhereJsonContains('data->colors', 'green')
+            ->orWhereJsonContains('data->colors', 'red')
+            ->get();
+        
+        $this->assertEquals(
+            [3 => $this->products[3], 5 => $this->products[5]],
+            $items->all()
+        );
+        
+        $items = $this->storage->table('products')->index('id')
+            ->whereJsonContains('data->colors', 'red')
+            ->get();
+        
+        $this->assertEquals(
+            [3 => $this->products[3], 5 => $this->products[5]],
+            $items->all()
+        );
     }
     
     public function testWhereJsonContainsKeyGetMethod()
