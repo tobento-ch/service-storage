@@ -1389,6 +1389,10 @@ class StorableTablesGrammar extends Grammar
                     return empty(array_diff($value, $columnValue));
                 }
                 
+                if (is_array($columnValue) && array_is_list($columnValue)) {
+                    return in_array($value, $columnValue);
+                }
+                
                 if (is_array($columnValue)) {
                     return empty(array_diff_assoc([$value], $columnValue));
                 }
