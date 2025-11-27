@@ -1,6 +1,6 @@
 {
     "name": "tobento/service-storage",
-    "version": "2.0.1",
+    "version": "2.0.2",
     "type": "library",
     "description": "A storage interface for storing and fetching items.",
     "keywords": [
