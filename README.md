@@ -175,7 +175,37 @@ var_dump($storage instanceof PdoAwareInterface);
 
 ### Pdo Sqlite Storage
 
-In progress ...
+```php
+use PDO;
+use Tobento\Service\Database\PdoDatabaseFactory;
+use Tobento\Service\Storage\PdoAwareInterface;
+use Tobento\Service\Storage\PdoMySqlStorage;
+use Tobento\Service\Storage\StorageInterface;
+use Tobento\Service\Storage\Tables\Tables;
+
+$pdo = new PdoDatabaseFactory()->createPdo(
+    name: 'sqlite',
+    config: [
+        'dsn' => 'sqlite:path/to/database.sqlite',
+        'options' => [
+            PDO::ATTR_ERRMODE => PDO::ERRMODE_EXCEPTION,
+            PDO::ATTR_EMULATE_PREPARES => false,
+        ],
+    ],
+);
+
+$tables = new Tables();
+$tables->add('products', ['id', 'sku', 'price'], 'id');
+$tables->add('users', ['id', 'firstname', 'lastname', 'email'], 'id');
+
+$storage = new PdoSqliteStorage($pdo, $tables);
+
+var_dump($storage instanceof StorageInterface);
+// bool(true)
+
+var_dump($storage instanceof PdoAwareInterface);
+// bool(true)
+```
 
 ### Json File Storage
 
@@ -237,6 +267,7 @@ Return items columns support:
 | --- | --- | --- | --- | --- |
 | [Pdo MariaDb Storage](#pdo-mariadb-storage) | yes | yes | no | yes |
 | [Pdo MySql Storage](#pdo-mysql-storage) | yes | no | no | no |
+| [Pdo Sqlite Storage](#pdo-sqlite-storage) | yes | yes | yes | yes |
 | [Json File Storage](#json-file-storage) | yes | yes | yes | yes |
 | [In Memory Storage](#in-memory-storage) | yes | yes | yes | yes |
         
