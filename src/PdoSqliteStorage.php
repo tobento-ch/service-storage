@@ -24,7 +24,7 @@ use Tobento\Service\Storage\Grammar\GrammarInterface;
 use Tobento\Service\Storage\Grammar\PdoSqliteGrammar;
 use Throwable;
 
-class PdoSqliteStorage extends Storage
+class PdoSqliteStorage extends Storage implements PdoAwareInterface
 {
     /**
      * @var int
