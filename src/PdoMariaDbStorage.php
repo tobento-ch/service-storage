@@ -175,12 +175,14 @@ class PdoMariaDbStorage extends Storage implements PdoAwareInterface
             return null;
         }
         
-        $pdoStatement = $this->execute(
-            statement: $grammar->getStatement(),
-            bindings: $grammar->getBindings()
-        );
-        
-        $this->clear();
+        try {
+            $pdoStatement = $this->execute(
+                statement: $grammar->getStatement(),
+                bindings: $grammar->getBindings()
+            );
+        } finally {
+            $this->clear();
+        }
         
         $data = $pdoStatement->fetch(PDO::FETCH_ASSOC);
         return is_array($data) ? new Item($data, action: 'first') : null;
@@ -217,12 +219,14 @@ class PdoMariaDbStorage extends Storage implements PdoAwareInterface
             return new Items(action: 'get');
         }
         
-        $pdoStatement = $this->execute(
-            statement: $grammar->getStatement(),
-            bindings: $grammar->getBindings()
-        );
-        
-        $this->clear();
+        try {
+            $pdoStatement = $this->execute(
+                statement: $grammar->getStatement(),
+                bindings: $grammar->getBindings()
+            );
+        } finally {
+            $this->clear();
+        }
 
         return new Items($pdoStatement->fetchAll($fetchMode), action: 'get');
     }
@@ -273,12 +277,14 @@ class PdoMariaDbStorage extends Storage implements PdoAwareInterface
             return new Item(action: 'column');
         }
 
-        $pdoStatement = $this->execute(
-            statement: $grammar->getStatement(),
-            bindings: $grammar->getBindings()
-        );        
-
-        $this->clear();
+        try {
+            $pdoStatement = $this->execute(
+                statement: $grammar->getStatement(),
+                bindings: $grammar->getBindings()
+            );
+        } finally {
+            $this->clear();
+        }
         
         return new Item($pdoStatement->fetchAll($fetchMode), action: 'column');
     }
@@ -591,12 +597,15 @@ class PdoMariaDbStorage extends Storage implements PdoAwareInterface
         if (!is_null($callback)) {
         
             $this->skipQuery = true;
-            call_user_func($callback, $this);
-            $this->skipQuery = false;
             
-            $statement = $this->grammar->getStatement();
-            $bindings = $this->grammar->getBindings();
-            $this->clear();
+            try {
+                call_user_func($callback, $this);
+                $statement = $this->grammar->getStatement();
+                $bindings = $this->grammar->getBindings();
+            } finally {
+                $this->skipQuery = false;
+                $this->clear();
+            }
             
             return [$statement, $bindings];    
         }
@@ -615,6 +624,8 @@ class PdoMariaDbStorage extends Storage implements PdoAwareInterface
         
         $statement = $grammar->getStatement();
         $bindings = $grammar->getBindings();
+        
+        $this->clear();
         
         return [$statement, $bindings];
     }    

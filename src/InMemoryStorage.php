@@ -168,9 +168,11 @@ class InMemoryStorage extends Storage
             return new Items(action: 'get');
         }
         
-        $data = $grammar->execute();
-        
-        $this->clear();
+        try {
+            $data = $grammar->execute();
+        } finally {
+            $this->clear();
+        }
         
         return new Items(is_array($data) ? $data : [], action: 'get');
     }
@@ -561,12 +563,15 @@ class InMemoryStorage extends Storage
         if (!is_null($callback)) {
         
             $this->skipQuery = true;
-            call_user_func($callback, $this);
-            $this->skipQuery = false;
             
-            $statement = $this->grammar->getStatement();
-            $bindings = $this->grammar->getBindings();
-            $this->clear();
+            try {
+                call_user_func($callback, $this);
+                $statement = $this->grammar->getStatement();
+                $bindings = $this->grammar->getBindings();
+            } finally {
+                $this->skipQuery = false;
+                $this->clear();
+            }
             
             return [$statement, $bindings];    
         }
@@ -585,6 +590,8 @@ class InMemoryStorage extends Storage
         
         $statement = $grammar->getStatement();
         $bindings = $grammar->getBindings();
+        
+        $this->clear();
         
         return [$statement, $bindings];
     }
